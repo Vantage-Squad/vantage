@@ -9,3 +9,30 @@ ktor:
       - com.example.bootstrap.StatusPagesKt.configureStatusPages
       - com.example.bootstrap.RoutingKt.configureRouting
 
+app:
+  apiKey: "${VANTAGE_API_KEY:-vantage-dev-key-2026}"
+  squad:
+    sandboxBaseUrl: "https://sandbox-api-d.squadco.com"
+    secretKey: "${SQUAD_SECRET_KEY:-}"
+    publicKey: "${SQUAD_PUBLIC_KEY:-}"
+  memgraph:
+    boltUri: "bolt://localhost:7687"
+    username: ""
+    password: ""
+  trustScore:
+    alpha: 0.35
+    beta: 0.40
+    gamma: 0.25
+    tiers:
+      green: 0.7
+      amber: 0.4
+      red: 0.0
+  llm:
+    provider: "${LLM_PROVIDER:-template}"
+    ollama:
+      model: "${OLLAMA_MODEL:-llama3.1:8b}"
+      baseUrl: "${OLLAMA_BASE_URL:-http://localhost:11434}"
+    gemini:
+      apiKey: "${GEMINI_API_KEY:-}"
+      model: "gemini-2.5-pro"
+
