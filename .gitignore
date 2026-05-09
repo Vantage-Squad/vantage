@@ -30,3 +30,6 @@ server/.env
 
 # Logs
 *.log
+
+# Server spec (internal reference, not for repo)
+docs/SPEC.md
