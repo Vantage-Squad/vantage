@@ -82,6 +82,7 @@ fun Route.configureApiRoutes() {
             "transactionRef" to req.transactionRef,
             "sessionId" to req.sessionId
         ))
+        trustService.compute(req.accountId)
         call.respond(HttpStatusCode.Created, mapOf("status" to "created", "transactionRef" to req.transactionRef))
     }
 
@@ -141,12 +142,16 @@ fun Route.configureApiRoutes() {
     post("/admin/flag/{id}") {
         val id = call.parameters["id"] ?: return@post
         memgraph.execute(Queries.flagAccount(), mapOf("id" to id))
+        val flagData = json.encodeToString(mapOf("accountId" to id, "isBlacklisted" to true, "reason" to "Admin flagged"))
+        AppContext.sseService.emit("flag_update", flagData)
         call.respond(mapOf("status" to "flagged", "id" to id))
     }
 
     post("/admin/unflag/{id}") {
         val id = call.parameters["id"] ?: return@post
         memgraph.execute(Queries.unflagAccount(), mapOf("id" to id))
+        val flagData = json.encodeToString(mapOf("accountId" to id, "isBlacklisted" to false, "reason" to "Admin unflagged"))
+        AppContext.sseService.emit("flag_update", flagData)
         call.respond(mapOf("status" to "unflagged", "id" to id))
     }
 

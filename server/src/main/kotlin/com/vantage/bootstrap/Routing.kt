@@ -2,6 +2,7 @@ package com.vantage.bootstrap
 
 import com.vantage.AppContext
 import com.vantage.auth.handleLogin
+import com.vantage.auth.verifyHmacSignature
 import com.vantage.service.TrustService
 import com.vantage.model.Tier
 import io.ktor.http.*
@@ -24,7 +25,16 @@ fun Application.configureRouting() {
         post("/squad/webhook") {
             val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
             val trustService = TrustService()
-            val body = call.receive<Map<String, String>>()
+            val bodyText = call.receive<String>()
+            val signature = call.request.header("X-Squad-Encrypted-Body")
+            if (signature != null) {
+                val secret = AppContext.config.squadSecretKey
+                if (!verifyHmacSignature(bodyText.toByteArray(), signature, secret)) {
+                    call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid HMAC signature"))
+                    return@post
+                }
+            }
+            val body = json.decodeFromString<Map<String, String>>(bodyText)
             val transactionRef = body["TransactionRef"] ?: body["transactionRef"] ?: run {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to "TransactionRef required"))
                 return@post
