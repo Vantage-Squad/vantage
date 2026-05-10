@@ -25,9 +25,16 @@ class AppConfig(config: ApplicationConfig) {
     val llmOllamaBaseUrl: String = env("OLLAMA_BASE_URL") ?: "http://localhost:11434"
     val llmGeminiApiKey: String = env("GEMINI_API_KEY") ?: ""
 
+    val adminEmail: String = env("ADMIN_EMAIL") ?: error("ADMIN_EMAIL must be set")
+    val adminPasswordHash: String = env("ADMIN_PASSWORD_HASH") ?: error("ADMIN_PASSWORD_HASH must be set")
+    val jwtSecret: String = env("JWT_SECRET") ?: error("JWT_SECRET must be set")
+
     private fun env(key: String): String? {
         val value = System.getenv(key)
-        return if (value.isNullOrBlank()) null else value
+        if (!value.isNullOrBlank()) return value
+        val prop = System.getProperty(key)
+        if (!prop.isNullOrBlank()) return prop
+        return null
     }
 
     private fun prop(config: ApplicationConfig, key: String): String? = try {
