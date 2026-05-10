@@ -1,8 +1,10 @@
-package com.example.bootstrap
+package com.vantage.bootstrap
 
-import com.example.config.AppConfig
-import com.example.db.MemgraphClient
-import com.example.db.SchemaSetup
+import com.vantage.AppContext
+import com.vantage.config.AppConfig
+import com.vantage.db.MemgraphClient
+import com.vantage.db.SchemaSetup
+import com.vantage.service.SseService
 import io.ktor.server.application.*
 import kotlinx.coroutines.runBlocking
 
@@ -16,6 +18,7 @@ fun Application.configureStartup() {
 
     AppContext.config = appConfig
     AppContext.memgraph = memgraph
+    AppContext.sseService = SseService()
 
     monitor.subscribe(ApplicationStarted) {
         println("[Vantage] Server started. Running schema setup...")

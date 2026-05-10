@@ -3,11 +3,11 @@ ktor:
     port: 8080
   application:
     modules:
-      - com.example.bootstrap.StartupKt.configureStartup
-      - com.example.bootstrap.HttpKt.configureHttp
-      - com.example.bootstrap.SerializationKt.configureSerialization
-      - com.example.bootstrap.StatusPagesKt.configureStatusPages
-      - com.example.bootstrap.RoutingKt.configureRouting
+      - com.vantage.bootstrap.StartupKt.configureStartup
+      - com.vantage.bootstrap.HttpKt.configureHttp
+      - com.vantage.bootstrap.SerializationKt.configureSerialization
+      - com.vantage.bootstrap.StatusPagesKt.configureStatusPages
+      - com.vantage.bootstrap.RoutingKt.configureRouting
 
 app:
   apiKey: "${VANTAGE_API_KEY:-vantage-dev-key-2026}"

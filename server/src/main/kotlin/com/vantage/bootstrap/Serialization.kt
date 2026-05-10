@@ -1,4 +1,4 @@
-package com.example.bootstrap
+package com.vantage.bootstrap
 
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*

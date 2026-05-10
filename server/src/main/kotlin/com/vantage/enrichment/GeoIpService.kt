@@ -1,7 +1,6 @@
-package com.example.enrichment
+package com.vantage.enrichment
 
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.serialization.Serializable

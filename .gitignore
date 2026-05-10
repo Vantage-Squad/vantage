@@ -47,3 +47,6 @@ client/.env*
 server/node_modules/
 server/dist/
 server/.env*
+
+# Server spec (internal reference, not for repo)
+docs/SPEC.md
