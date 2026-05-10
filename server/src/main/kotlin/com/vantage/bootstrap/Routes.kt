@@ -21,6 +21,10 @@ import kotlinx.serialization.json.Json
 @Suppress("DEPRECATION")
 fun Route.configureApiRoutes() {
     intercept(ApplicationCallPipeline.Call) {
+        if (call.request.uri.endsWith("/admin/login")) {
+            proceed()
+            return@intercept
+        }
         if (!authenticateRequest(call)) {
             call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Unauthorized"))
             return@intercept
