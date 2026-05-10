@@ -15,6 +15,9 @@ class ServerTest {
     @Test
     fun `test health endpoint`() = testApplication {
         application {
+            System.setProperty("ADMIN_EMAIL", "admin@test.com")
+            System.setProperty("ADMIN_PASSWORD_HASH", "test-hash")
+            System.setProperty("JWT_SECRET", "test-secret")
             AppContext.config = AppConfig(environment.config)
             AppContext.memgraph = MemgraphClient("bolt://localhost:7687")
             AppContext.sseService = SseService()
