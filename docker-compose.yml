@@ -4,7 +4,7 @@ services:
     ports:
       - "7688:7687"
       - "7444:7444"
-    command: ["--log-level=TRACE", "--bolt-server-name-for-init=Neo4j/5.2.0"]
+    command: ["--log-level=TRACE", "--bolt-server-name-for-init=Neo4j/4.4.20"]
     volumes:
       - memgraph-data:/var/lib/memgraph
 
