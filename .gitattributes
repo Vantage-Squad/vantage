@@ -1,0 +1,3 @@
+server/docs/** linguist-generated=true
+server/build/** linguist-generated=true
+.kotlin/** linguist-generated=true
