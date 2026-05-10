@@ -15,7 +15,7 @@ class MemgraphClient(
         AuthTokens.basic(username, password)
     )
 
-    suspend fun query(cypher: String, params: Map<String, Any> = emptyMap()): List<Map<String, Any>> =
+    suspend fun query(cypher: String, params: Map<String, Any?> = emptyMap()): List<Map<String, Any>> =
         withContext(Dispatchers.IO) {
             driver.session().use { session ->
                 session.run(cypher, params).list().map { record ->
@@ -26,14 +26,14 @@ class MemgraphClient(
             }
         }
 
-    suspend fun execute(cypher: String, params: Map<String, Any> = emptyMap()) =
+    suspend fun execute(cypher: String, params: Map<String, Any?> = emptyMap()) =
         withContext(Dispatchers.IO) {
             driver.session().use { session ->
                 session.run(cypher, params).consume()
             }
         }
 
-    suspend fun readSingle(cypher: String, params: Map<String, Any> = emptyMap()): Map<String, Any>? =
+    suspend fun readSingle(cypher: String, params: Map<String, Any?> = emptyMap()): Map<String, Any>? =
         withContext(Dispatchers.IO) {
             driver.session().use { session ->
                 val results = session.run(cypher, params).list()
