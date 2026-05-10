@@ -25,8 +25,6 @@ class AppConfig(config: ApplicationConfig) {
     val llmOllamaBaseUrl: String = env("OLLAMA_BASE_URL") ?: "http://localhost:11434"
     val llmGeminiApiKey: String = env("GEMINI_API_KEY") ?: ""
 
-    val adminEmail: String = env("ADMIN_EMAIL") ?: error("ADMIN_EMAIL must be set")
-    val adminPasswordHash: String = env("ADMIN_PASSWORD_HASH") ?: error("ADMIN_PASSWORD_HASH must be set")
     val jwtSecret: String = env("JWT_SECRET") ?: error("JWT_SECRET must be set")
 
     private fun env(key: String): String? {

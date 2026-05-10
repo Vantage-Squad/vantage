@@ -1,6 +1,7 @@
 package com.vantage.auth
 
 import com.vantage.AppContext
+import com.vantage.db.Queries
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -27,22 +28,37 @@ data class JwtPayload(val sub: String, val email: String, val iat: Long, val exp
 
 suspend fun handleLogin(call: ApplicationCall) {
     val config = AppContext.config
+    val memgraph = AppContext.memgraph
     val body = call.receive<LoginRequest>()
 
-    if (body.email != config.adminEmail) {
+    val result = memgraph.readSingle(Queries.findAdminByEmail(), mapOf("email" to body.email))
+    if (result == null) {
+        call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid credentials"))
+        return
+    }
+
+    val node = result["u"] as? Map<*, *> ?: run {
+        call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid credentials"))
+        return
+    }
+
+    val storedHash = node["passwordHash"] as? String ?: run {
         call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid credentials"))
         return
     }
 
     val hash = sha256(body.password)
-    if (hash != config.adminPasswordHash) {
+    if (hash != storedHash) {
         call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid credentials"))
         return
     }
 
+    val userId = node["id"] as? String ?: body.email
+    memgraph.execute(Queries.updateAdminLogin(), mapOf("id" to userId))
+
     val now = Instant.now().epochSecond
     val exp = now + 86400
-    val payload = JwtPayload(sub = body.email, email = body.email, iat = now, exp = exp)
+    val payload = JwtPayload(sub = userId, email = body.email, iat = now, exp = exp)
     val token = createJwt(payload, config.jwtSecret)
 
     call.respond(LoginResponse(token = token, expiresIn = 86400))

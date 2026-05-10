@@ -83,6 +83,21 @@ object Queries {
         LIMIT 1
     """.trimIndent()
 
+    fun createAdminUser() = """
+        CREATE (u:AdminUser {id: ${"$"}id, email: ${"$"}email, passwordHash: ${"$"}passwordHash, createdAt: datetime()})
+        RETURN u
+    """.trimIndent()
+
+    fun findAdminByEmail() = "MATCH (u:AdminUser {email: ${"$"}email}) RETURN u"
+
+    fun countAdminUsers() = "MATCH (u:AdminUser) RETURN count(u) AS count"
+
+    fun updateAdminLogin() = """
+        MATCH (u:AdminUser {id: ${"$"}id})
+        SET u.lastLoginAt = datetime()
+        RETURN u
+    """.trimIndent()
+
     fun graphNetwork() = """
         MATCH (a:Account)-[t:TRANSACTED_WITH]->(c:Counterparty)
         WHERE ${"$"}accountId IS NULL OR a.id = ${"$"}accountId
