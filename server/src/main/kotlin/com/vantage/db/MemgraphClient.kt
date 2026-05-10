@@ -10,10 +10,11 @@ class MemgraphClient(
     private val password: String = ""
 ) : AutoCloseable {
 
-    private val driver: Driver = GraphDatabase.driver(
-        boltUri,
-        AuthTokens.basic(username, password)
-    )
+    private val driver: Driver = if (username.isBlank()) {
+        GraphDatabase.driver(boltUri, AuthTokens.none())
+    } else {
+        GraphDatabase.driver(boltUri, AuthTokens.basic(username, password))
+    }
 
     suspend fun query(cypher: String, params: Map<String, Any?> = emptyMap()): List<Map<String, Any>> =
         withContext(Dispatchers.IO) {

@@ -46,7 +46,7 @@ Squad API ←→ Vantage (Ktor :8080) ←→ Memgraph (Bolt :7687)
 
 ## Tech Stack
 - **Server**: Kotlin 2.3.20 + Ktor 3.4.0 (Netty)
-- **Graph DB**: Memgraph (Docker, Bolt :7687, image: memgraph/memgraph-mage:latest)
+- **Graph DB**: Memgraph (Docker, Bolt :7687, image: memgraph/memgraph-mage:3.8.0)
 - **AI Agent**: Koog 0.7.1 — 3-tier fallback: Ollama → Gemini → Template
 - **Serialization**: kotlinx-serialization-json 1.7.3
 - **GeoIP**: ip-api.com (free HTTP API)
