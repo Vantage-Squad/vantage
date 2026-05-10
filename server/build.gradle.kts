@@ -50,6 +50,9 @@ dependencies {
     // Koog AI agent
     implementation(libs.koog.agents)
 
+    // Dotenv
+    implementation(libs.dotenv.kotlin)
+
     // Logging
     implementation(libs.logback.classic)
 
