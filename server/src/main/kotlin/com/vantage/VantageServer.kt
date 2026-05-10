@@ -1,14 +1,15 @@
-package com.vantage.bootstrap
+package com.vantage
 
 import com.vantage.config.AppConfig
 import com.vantage.db.MemgraphClient
-import io.ktor.server.netty.*
+import com.vantage.service.SseService
 
 fun main(args: Array<String>) {
-    EngineMain.main(args)
+    io.ktor.server.netty.EngineMain.main(args)
 }
 
 object AppContext {
     lateinit var config: AppConfig
     lateinit var memgraph: MemgraphClient
+    lateinit var sseService: SseService
 }
