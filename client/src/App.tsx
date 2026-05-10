@@ -6,6 +6,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="auth" />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
