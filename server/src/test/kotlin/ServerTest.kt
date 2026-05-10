@@ -1,6 +1,6 @@
-package com.example
+package com.vantage
 
-import com.example.bootstrap.configureRouting
+import com.vantage.bootstrap.configureRouting
 import io.ktor.client.request.get
 import io.ktor.http.*
 import io.ktor.server.testing.testApplication

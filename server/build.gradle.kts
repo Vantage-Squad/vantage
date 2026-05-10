@@ -4,7 +4,7 @@ plugins {
     alias(ktorLibs.plugins.ktor)
 }
 
-group = "com.example"
+group = "com.vantage"
 version = "1.0.0-SNAPSHOT"
 
 application {

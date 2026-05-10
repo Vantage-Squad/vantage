@@ -1,8 +1,8 @@
-package com.example.bootstrap
+package com.vantage.bootstrap
 
-import com.example.config.AppConfig
-import com.example.db.MemgraphClient
-import com.example.db.SchemaSetup
+import com.vantage.config.AppConfig
+import com.vantage.db.MemgraphClient
+import com.vantage.db.SchemaSetup
 import io.ktor.server.application.*
 import kotlinx.coroutines.runBlocking
 

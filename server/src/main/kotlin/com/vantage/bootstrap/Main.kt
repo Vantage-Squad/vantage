@@ -1,8 +1,7 @@
-package com.example.bootstrap
+package com.vantage.bootstrap
 
-import com.example.config.AppConfig
-import com.example.db.MemgraphClient
-import io.ktor.server.engine.*
+import com.vantage.config.AppConfig
+import com.vantage.db.MemgraphClient
 import io.ktor.server.netty.*
 
 fun main(args: Array<String>) {
