@@ -1,5 +1,7 @@
 package com.vantage.db
 
+import com.vantage.AppContext
+
 class SchemaSetup(private val client: MemgraphClient) {
 
     suspend fun run() {
@@ -22,8 +24,8 @@ class SchemaSetup(private val client: MemgraphClient) {
     }
 
     private suspend fun seedAdmin() {
-        val adminEmail = System.getenv("ADMIN_EMAIL") ?: return
-        val adminPasswordHash = System.getenv("ADMIN_PASSWORD_HASH") ?: return
+        val adminEmail = AppContext.config.adminEmail ?: return
+        val adminPasswordHash = AppContext.config.adminPasswordHash ?: return
         val count = client.readSingle(Queries.countAdminUsers())
         val exists = (count?.get("count") as? Number)?.toInt() ?: 0
         if (exists == 0) {
