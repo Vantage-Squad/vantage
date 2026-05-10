@@ -1,6 +1,8 @@
 package com.vantage.bootstrap
 
 import com.vantage.AppContext
+import com.vantage.auth.authenticateRequest
+import com.vantage.auth.handleLogin
 import com.vantage.db.Queries
 import com.vantage.enrichment.GeoIpService
 import com.vantage.model.*
@@ -19,10 +21,7 @@ import kotlinx.serialization.json.Json
 @Suppress("DEPRECATION")
 fun Route.configureApiRoutes() {
     intercept(ApplicationCallPipeline.Call) {
-        val apiKey = AppContext.config.apiKey
-        val header = call.request.header(HttpHeaders.Authorization)
-        val token = header?.removePrefix("Bearer ")?.trim()
-        if (token != apiKey) {
+        if (!authenticateRequest(call)) {
             call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Unauthorized"))
             return@intercept
         }

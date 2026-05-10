@@ -1,6 +1,7 @@
 package com.vantage.bootstrap
 
 import com.vantage.AppContext
+import com.vantage.auth.handleLogin
 import com.vantage.service.TrustService
 import com.vantage.model.Tier
 import io.ktor.http.*
@@ -15,6 +16,9 @@ fun Application.configureRouting() {
     install(SSE)
     routing {
         route("/api/v1") {
+            post("/admin/login") {
+                handleLogin(call)
+            }
             configureApiRoutes()
         }
         post("/squad/webhook") {
