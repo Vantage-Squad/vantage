@@ -1,4 +1,4 @@
-package com.example.model
+package com.vantage.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

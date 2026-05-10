@@ -1,8 +1,13 @@
-package com.example.config
+package com.vantage.config
 
+import io.github.cdimascio.dotenv.dotenv
 import io.ktor.server.config.ApplicationConfig
 
 class AppConfig(config: ApplicationConfig) {
+
+    private val dotenv = dotenv {
+        ignoreIfMissing = true
+    }
 
     val apiKey: String = env("VANTAGE_API_KEY") ?: prop(config, "app.apiKey") ?: "vantage-dev-key-2026"
 
@@ -25,9 +30,16 @@ class AppConfig(config: ApplicationConfig) {
     val llmOllamaBaseUrl: String = env("OLLAMA_BASE_URL") ?: "http://localhost:11434"
     val llmGeminiApiKey: String = env("GEMINI_API_KEY") ?: ""
 
+    val jwtSecret: String = env("JWT_SECRET") ?: ""
+
     private fun env(key: String): String? {
+        val dotenvVal = dotenv[key]
+        if (!dotenvVal.isNullOrBlank()) return dotenvVal
         val value = System.getenv(key)
-        return if (value.isNullOrBlank()) null else value
+        if (!value.isNullOrBlank()) return value
+        val prop = System.getProperty(key)
+        if (!prop.isNullOrBlank()) return prop
+        return null
     }
 
     private fun prop(config: ApplicationConfig, key: String): String? = try {

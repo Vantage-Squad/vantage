@@ -1,4 +1,4 @@
-package com.example.db
+package com.vantage.db
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,12 +10,13 @@ class MemgraphClient(
     private val password: String = ""
 ) : AutoCloseable {
 
-    private val driver: Driver = GraphDatabase.driver(
-        boltUri,
-        AuthTokens.basic(username, password)
-    )
+    private val driver: Driver = if (username.isBlank()) {
+        GraphDatabase.driver(boltUri, AuthTokens.none())
+    } else {
+        GraphDatabase.driver(boltUri, AuthTokens.basic(username, password))
+    }
 
-    suspend fun query(cypher: String, params: Map<String, Any> = emptyMap()): List<Map<String, Any>> =
+    suspend fun query(cypher: String, params: Map<String, Any?> = emptyMap()): List<Map<String, Any>> =
         withContext(Dispatchers.IO) {
             driver.session().use { session ->
                 session.run(cypher, params).list().map { record ->
@@ -26,14 +27,14 @@ class MemgraphClient(
             }
         }
 
-    suspend fun execute(cypher: String, params: Map<String, Any> = emptyMap()) =
+    suspend fun execute(cypher: String, params: Map<String, Any?> = emptyMap()) =
         withContext(Dispatchers.IO) {
             driver.session().use { session ->
                 session.run(cypher, params).consume()
             }
         }
 
-    suspend fun readSingle(cypher: String, params: Map<String, Any> = emptyMap()): Map<String, Any>? =
+    suspend fun readSingle(cypher: String, params: Map<String, Any?> = emptyMap()): Map<String, Any>? =
         withContext(Dispatchers.IO) {
             driver.session().use { session ->
                 val results = session.run(cypher, params).list()

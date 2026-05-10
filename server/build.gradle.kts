@@ -4,11 +4,11 @@ plugins {
     alias(ktorLibs.plugins.ktor)
 }
 
-group = "com.example"
+group = "com.vantage"
 version = "1.0.0-SNAPSHOT"
 
 application {
-    mainClass = "io.ktor.server.netty.EngineMain"
+    mainClass = "com.vantage.VantageServerKt"
 }
 
 kotlin {
@@ -49,6 +49,9 @@ dependencies {
 
     // Koog AI agent
     implementation(libs.koog.agents)
+
+    // Dotenv
+    implementation(libs.dotenv.kotlin)
 
     // Logging
     implementation(libs.logback.classic)
