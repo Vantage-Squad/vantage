@@ -1,4 +1,4 @@
-package com.example.db
+package com.vantage.db
 
 object Queries {
 

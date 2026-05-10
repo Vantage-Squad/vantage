@@ -1,4 +1,4 @@
-package com.example.bootstrap
+package com.vantage.bootstrap
 
 import io.ktor.http.*
 import io.ktor.server.application.*

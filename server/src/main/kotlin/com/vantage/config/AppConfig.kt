@@ -1,4 +1,4 @@
-package com.example.config
+package com.vantage.config
 
 import io.ktor.server.config.ApplicationConfig
 

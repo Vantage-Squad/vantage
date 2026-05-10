@@ -1,4 +1,4 @@
-package com.example.db
+package com.vantage.db
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
