@@ -8,11 +8,10 @@ import { store } from './store/store.ts'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Provider store = {store}>
+    <Provider store={store}>
       <BrowserRouter>
-      <App />
-    </BrowserRouter>
+        <App />
+      </BrowserRouter>
     </Provider>
-    
   </StrictMode>,
 )

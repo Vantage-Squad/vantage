@@ -2,9 +2,9 @@ services:
   memgraph:
     image: memgraph/memgraph-mage:3.8.0
     ports:
-      - "7687:7687"
+      - "7688:7687"
       - "7444:7444"
-    command: ["--log-level=TRACE"]
+    command: ["--log-level=TRACE", "--bolt-server-name-for-init=Neo4j/5.2.0"]
     volumes:
       - memgraph-data:/var/lib/memgraph
 

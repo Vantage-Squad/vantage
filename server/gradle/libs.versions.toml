@@ -3,7 +3,7 @@ kotlin = "2.3.20"
 logback = "1.5.21"
 kotlinx-serialization = "1.7.3"
 kotlinx-coroutines = "1.10.2"
-neo4j-driver = "5.27.0"
+neo4j-driver = "4.4.20"
 koog = "0.7.1"
 dotenv = "6.4.1"
 

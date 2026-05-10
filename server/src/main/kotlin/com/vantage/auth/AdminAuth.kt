@@ -37,12 +37,15 @@ suspend fun handleLogin(call: ApplicationCall) {
         return
     }
 
-    val node = result["u"] as? Map<*, *> ?: run {
+    val nodeObj = result["u"]
+    val node = if (nodeObj is org.neo4j.driver.types.Node) nodeObj.asMap() else nodeObj as? Map<*, *>
+    if (node == null) {
         call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid credentials"))
         return
     }
 
-    val storedHash = node["passwordHash"] as? String ?: run {
+    val storedHash = node["passwordHash"] as? String
+    if (storedHash == null) {
         call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid credentials"))
         return
     }
