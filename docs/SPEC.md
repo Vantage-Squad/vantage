@@ -12,7 +12,7 @@ Before running the server, you need:
 | Squad sandbox keys | Sign up at [Squad sandbox](https://sandbox-api-d.squadco.com) for `SQUAD_SECRET_KEY` and `SQUAD_PUBLIC_KEY` | For Squad features |
 | Gemini API key | Get one at [aistudio.google.com](https://aistudio.google.com) for `GEMINI_API_KEY` | For AI explanations |
 | Ollama | Install [Ollama](https://ollama.com) and pull a model (e.g. `ollama pull llama3.1:8b`) | For local AI fallback |
-| Admin password hash | Generate SHA-256 hex of your admin password: `echo -n "your-password" | sha256sum` | **Yes** |
+| Admin password hash | Generate SHA-256 hex: `echo -n "your-password" | sha256sum` — only needed once for first-run seed | **Yes** |
 | Ngrok (optional) | For receiving real Squad webhooks in development | For webhook testing |
 
 ### Quick start
@@ -78,6 +78,14 @@ Webhook route (`/squad/webhook`) uses HMAC-SHA512 verification.
 })
 ```
 
+### AdminUser node
+```
+(:AdminUser {
+  id: String, email: String, passwordHash: String,
+  createdAt: DateTime, lastLoginAt: DateTime?
+})
+```
+
 ### Counterparty node
 ```
 (:Counterparty {
@@ -100,6 +108,7 @@ Webhook route (`/squad/webhook`) uses HMAC-SHA512 verification.
 CREATE INDEX ON :Account(id)
 CREATE INDEX ON :Account(email)
 CREATE INDEX ON :Counterparty(id)
+CREATE INDEX ON :AdminUser(email)
 ```
 
 ## Trust Score
@@ -167,17 +176,30 @@ Runs on JVM 21, Ktor Netty engine on port 8080.
 ## Admin Session Auth
 
 - **Login**: `POST /api/v1/admin/login` — accepts `{ email, password }`, returns `{ token, expiresIn }`
-- **Validation**: Password compared against env var `ADMIN_PASSWORD_HASH` (SHA-256 hex)
+- **Validation**: Password compared against hash stored in Memgraph `(:AdminUser)` node
 - **JWT**: HMAC-SHA256 signed, payload `{ sub, email, iat, exp }`, secret from env `JWT_SECRET`
 - **TTL**: 24 hours (`expiresIn: 86400`)
 - **Auth interceptor**: accepts `Authorization: Bearer <api-key>` **or** `Authorization: Bearer <jwt>`
 
-Config via env (no defaults — startup fails if admin auth is misconfigured):
+**Admin storage**: Admins live in Memgraph, not env vars. The first admin is seeded from env vars on startup only when no `AdminUser` node exists:
 
 ```bash
-ADMIN_EMAIL=admin@vantage.com
-ADMIN_PASSWORD_HASH=<sha256-hex>
+# Seed-only — read once on first run, then ignored
+ADMIN_EMAIL=abraham.o.bankole@gmail.com
+ADMIN_PASSWORD_HASH=<sha256-hex-of-password>
+
+# Required always — used for JWT signing
 JWT_SECRET=vantage-jwt-secret-2026
+```
+
+To add more admins without restarting, insert directly via Cypher:
+```cypher
+CREATE (:AdminUser {id: "admin2@example.com", email: "admin2@example.com", passwordHash: "<sha256-hex>", createdAt: datetime()});
+```
+Remove or replace an admin by matching on `id` or `email`:
+```cypher
+MATCH (u:AdminUser {email: "admin2@example.com"}) SET u.passwordHash = "<new-sha256-hex>";
+MATCH (u:AdminUser {email: "old@example.com"}) DELETE u;
 ```
 
 ## Execution Plan
@@ -230,7 +252,8 @@ JWT_SECRET=vantage-jwt-secret-2026
 - [x] `POST /api/v1/admin/login`
 - [x] JWT creation/verification (HMAC-SHA256)
 - [x] Auth interceptor accepts API key **or** JWT
-- [x] Env vars: `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`, `JWT_SECRET`
+- [x] Env vars `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH` seed first admin in Memgraph
+- [x] Memgraph-backed `(:AdminUser)` storage (env vars seed-only, no startup failure)
 
 ### Remaining work
 - [ ] React client (empty `client/` directory)
