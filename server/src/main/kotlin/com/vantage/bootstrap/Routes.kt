@@ -21,7 +21,7 @@ import kotlinx.serialization.json.Json
 @Suppress("DEPRECATION")
 fun Route.configureApiRoutes() {
     intercept(ApplicationCallPipeline.Call) {
-        if (call.request.uri.endsWith("/admin/login")) {
+        if (call.request.uri.substringBefore('?') == "/api/v1/admin/login") {
             proceed()
             return@intercept
         }

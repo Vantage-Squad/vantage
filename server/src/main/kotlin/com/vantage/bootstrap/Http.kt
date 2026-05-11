@@ -9,12 +9,16 @@ import io.ktor.server.routing.*
 fun Application.configureHttp() {
     install(CORS) {
         allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
         allowMethod(HttpMethod.Put)
         allowMethod(HttpMethod.Delete)
         allowMethod(HttpMethod.Patch)
         allowHeader(HttpHeaders.Authorization)
+        allowHeader(HttpHeaders.ContentType)
         allowHeader("X-Squad-Encrypted-Body")
-        anyHost()
+        allowNonSimpleContentTypes = true
+        allowHost("localhost:5173")
     }
     routing {
         openAPI(path = "openapi") {}
