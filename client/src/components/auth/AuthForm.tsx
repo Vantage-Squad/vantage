@@ -16,10 +16,10 @@ const AuthForm = () => {
 
     useEffect(() => {
         if (status === "success") {
-            const timer = setTimeout(() => navigate("/"), 600);
-            return () => clearTimeout(timer);
+            navigate("/dashboard", { replace: true });
         }
     }, [status, navigate]);
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

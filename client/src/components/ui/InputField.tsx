@@ -41,13 +41,14 @@ const InputField = ({ label, error, icon, disabled, ...props }: InputFieldProps)
                 }}
             >
                 <input 
-                    className="flex-grow bg-transparent outline-none px-3 py-2 w-full"
+                    className="grow bg-transparent outline-none px-3 py-2 w-full"
                     style={{ 
                         color: "var(--color-text-primary)",
                         fontSize: "var(--font-size-body)",
                     }}
                     onFocus={(e) => {
                         setIsFocused(true);
+                        
                         props.onFocus?.(e);
                     }}
                     onBlur={(e) => {

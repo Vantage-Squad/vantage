@@ -6,7 +6,7 @@ import { isAxiosError } from "axios";
 
 //storage keys
 const TOKEN_KEY = "vantage_token";
-const USER_KEY = "vantage_token";
+const USER_KEY  = "vantage_user";
 
 //token storage
 export function getToken(): string | null {
@@ -59,23 +59,38 @@ export function rehydrateAuth(): void {
 }
 
 
+// Decode user identity from the JWT payload (sub + email)
+function decodeJwtUser(token: string): AuthUser | null {
+    try {
+        const raw = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        const payload = JSON.parse(atob(raw));
+        if (!payload.sub || !payload.email) return null;
+        return { id: payload.sub, email: payload.email };
+    } catch {
+        return null;
+    }
+}
+
 export async function login(email: string, password: string): Promise<void> {
     store.dispatch(setLoading());
 
     try {
-        const { data } = await axiosInstance.post<{ token: string; user: AuthUser }>(
-            "/api/auth/login",
+        const { data } = await axiosInstance.post<{ token: string; expiresIn: number }>(
+            "/api/v1/admin/login",
             { email, password }
         );
-        //persist before dispatching
-        saveSession(data.token, data.user);
-        store.dispatch(setSuccess({ token: data.token, user: data.user }));
 
+        const user = decodeJwtUser(data.token);
+        if (!user) throw new Error("Malformed token received from server");
+
+        //persist before dispatching
+        saveSession(data.token, user);
+        store.dispatch(setSuccess({ token: data.token, user }));
 
     } catch (err: unknown) {
         const message = isAxiosError(err) && err.response?.status === 401
             ? "Invalid email or password. Please try again"
-            : "something went wrong. Please try again.";
+            : "Something went wrong. Please try again.";
 
         store.dispatch(setError(message));
     }

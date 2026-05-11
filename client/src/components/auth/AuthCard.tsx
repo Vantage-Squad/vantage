@@ -19,6 +19,7 @@ const AuthCard = ({ children }: AuthCardProps) => {
                 className="w-full max-w-100 p-8 sm:p-10 rounded-xl shadow-2xl flex flex-col"
                 style={{ 
                     backgroundColor: "var(--color-bg-card)",
+                    border: "1px solid var(--color-outline-variant)",
                     animation: "slideUpFade 250ms ease-out 100ms both"
                 }}
             >

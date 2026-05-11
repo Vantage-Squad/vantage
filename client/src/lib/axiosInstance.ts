@@ -26,7 +26,7 @@ axiosInstance.interceptors.response.use(
     (response : AxiosResponse) => response, 
     async (error : AxiosError)=> {
         if (error.response?.status === 401) {
-            if (!window.location.pathname.startsWith("/login")) {
+            if (!window.location.pathname.startsWith("/auth")) {
                 const { logout } = await import("../services/auth");
                 await logout();
             }

@@ -28,7 +28,7 @@ const ProtectedRoute =  ( { children } : ProtectedRouteProps) => {
     }
 
     if (!token || !isTokenValid(token)) {
-        return <Navigate to = "/login" replace />
+        return <Navigate to="/auth" replace />;
     }
 
     return (
