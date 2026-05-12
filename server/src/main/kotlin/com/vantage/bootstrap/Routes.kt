@@ -17,6 +17,11 @@ import io.ktor.server.routing.*
 import io.ktor.server.sse.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.addJsonObject
 
 @Suppress("DEPRECATION")
 fun Route.configureApiRoutes() {
@@ -26,7 +31,7 @@ fun Route.configureApiRoutes() {
             return@intercept
         }
         if (!authenticateRequest(call)) {
-            call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Unauthorized"))
+            call.respond(HttpStatusCode.Unauthorized, buildJsonObject { put("error", "Unauthorized") })
             return@intercept
         }
         proceed()
@@ -59,14 +64,17 @@ fun Route.configureApiRoutes() {
             "geoCity" to geoCity,
             "geoCountry" to geoCountry
         ))
-        call.respond(HttpStatusCode.Created, mapOf("status" to "created", "id" to req.id))
+        call.respond(HttpStatusCode.Created, buildJsonObject {
+            put("status", "created")
+            put("id", req.id)
+        })
     }
 
     post("/ingest/transaction") {
         val req = call.receive<TransactionCreateRequest>()
         val account = memgraph.readSingle(Queries.findAccountById(), mapOf("id" to req.accountId))
         if (account == null) {
-            call.respond(HttpStatusCode.NotFound, mapOf("error" to "Account not found"))
+            call.respond(HttpStatusCode.NotFound, buildJsonObject { put("error", "Account not found") })
             return@post
         }
         memgraph.readSingle(Queries.findCounterpartyById(), mapOf("id" to req.counterpartyId))
@@ -87,14 +95,17 @@ fun Route.configureApiRoutes() {
             "sessionId" to req.sessionId
         ))
         trustService.compute(req.accountId)
-        call.respond(HttpStatusCode.Created, mapOf("status" to "created", "transactionRef" to req.transactionRef))
+        call.respond(HttpStatusCode.Created, buildJsonObject {
+            put("status", "created")
+            put("transactionRef", req.transactionRef)
+        })
     }
 
     get("/trust/{accountId}") {
         val accountId = call.parameters["accountId"] ?: return@get
         val account = memgraph.readSingle(Queries.findAccountById(), mapOf("id" to accountId))
         if (account == null) {
-            call.respond(HttpStatusCode.NotFound, mapOf("error" to "Account not found"))
+            call.respond(HttpStatusCode.NotFound, buildJsonObject { put("error", "Account not found") })
             return@get
         }
         val ts = trustService.compute(accountId)
@@ -106,26 +117,28 @@ fun Route.configureApiRoutes() {
     post("/audit/proof-of-life") {
         val body = call.receive<Map<String, String>>()
         val accountId = body["accountId"] ?: run {
-            call.respond(HttpStatusCode.BadRequest, mapOf("error" to "accountId required"))
+            call.respond(HttpStatusCode.BadRequest, buildJsonObject { put("error", "accountId required") })
             return@post
         }
         val account = memgraph.readSingle(Queries.findAccountById(), mapOf("id" to accountId))
         if (account == null) {
-            call.respond(HttpStatusCode.NotFound, mapOf("error" to "Account not found"))
+            call.respond(HttpStatusCode.NotFound, buildJsonObject { put("error", "Account not found") })
             return@post
         }
         val ts = trustService.compute(accountId)
         val explanation = aiService.explain(ts)
-        val response = mapOf(
-            "accountId" to accountId,
-            "trustScore" to ts.ts,
-            "tier" to ts.tier.name,
-            "verdict" to explanation.verdict,
-            "summary" to explanation.summary,
-            "riskFactors" to explanation.riskFactors,
-            "recommendedAction" to explanation.recommendedAction
-        )
-        call.respondText(json.encodeToString(response), ContentType.Application.Json)
+        val response = buildJsonObject {
+            put("accountId", accountId)
+            put("trustScore", ts.ts)
+            put("tier", ts.tier.name)
+            put("verdict", explanation.verdict)
+            put("summary", explanation.summary)
+            putJsonArray("riskFactors") {
+                explanation.riskFactors.forEach { add(it) }
+            }
+            put("recommendedAction", explanation.recommendedAction)
+        }
+        call.respondText(response.toString(), ContentType.Application.Json)
     }
 
     get("/status/{transactionRef}") {
@@ -146,17 +159,31 @@ fun Route.configureApiRoutes() {
     post("/admin/flag/{id}") {
         val id = call.parameters["id"] ?: return@post
         memgraph.execute(Queries.flagAccount(), mapOf("id" to id))
-        val flagData = json.encodeToString(mapOf("accountId" to id, "isBlacklisted" to true, "reason" to "Admin flagged"))
+        val flagData = buildJsonObject {
+            put("accountId", id)
+            put("isBlacklisted", true)
+            put("reason", "Admin flagged")
+        }.toString()
         AppContext.sseService.emit("flag_update", flagData)
-        call.respond(mapOf("status" to "flagged", "id" to id))
+        call.respond(buildJsonObject {
+            put("status", "flagged")
+            put("id", id)
+        })
     }
 
     post("/admin/unflag/{id}") {
         val id = call.parameters["id"] ?: return@post
         memgraph.execute(Queries.unflagAccount(), mapOf("id" to id))
-        val flagData = json.encodeToString(mapOf("accountId" to id, "isBlacklisted" to false, "reason" to "Admin unflagged"))
+        val flagData = buildJsonObject {
+            put("accountId", id)
+            put("isBlacklisted", false)
+            put("reason", "Admin unflagged")
+        }.toString()
         AppContext.sseService.emit("flag_update", flagData)
-        call.respond(mapOf("status" to "unflagged", "id" to id))
+        call.respond(buildJsonObject {
+            put("status", "unflagged")
+            put("id", id)
+        })
     }
 
     get("/admin/flagged") {
@@ -191,7 +218,10 @@ fun Route.configureApiRoutes() {
             ))
             imported++
         }
-        call.respond(mapOf("status" to "imported", "count" to imported))
+        call.respond(buildJsonObject {
+            put("status", "imported")
+            put("count", imported)
+        })
     }
 
     get("/graph/network") {

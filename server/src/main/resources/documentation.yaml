@@ -1,23 +1,319 @@
 openapi: "3.0.3"
 info:
-  title: "Application API"
-  description: "Application API"
+  title: "Vantage Server API"
+  description: "AI-powered audit layer for Nigerian fintech. Middleware for detecting mule accounts and synthetic identities using graph network analysis."
   version: "1.0.0"
 servers:
-  - url: "http://0.0.0.0:8080"
+  - url: "http://localhost:8080"
+    description: "Local development server"
 paths:
-  /:
+  /health:
     get:
-      description: "Hello World!"
+      summary: "Health Check"
+      description: "Returns the health status of the Vantage service."
       responses:
         "200":
-          description: "OK"
+          description: "Service is healthy"
           content:
-            text/plain:
+            application/json:
               schema:
-                type: "string"
-              examples:
-                Example#1:
-                  value: "Hello World!"
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  service:
+                    type: string
+                    example: "vantage"
+
+  /api/v1/admin/login:
+    post:
+      summary: "Admin Login"
+      description: "Authenticates an admin and returns a JWT."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, example: "admin@vantage.com" }
+                password: { type: string, example: "securepassword" }
+      responses:
+        "200":
+          description: "Login successful"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  expiresIn: { type: integer, example: 86400 }
+        "401":
+          description: "Invalid credentials"
+
+  /api/v1/ingest/account:
+    post:
+      summary: "Ingest Account"
+      security: [{ bearerAuth: [] }, { apiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountCreateRequest"
+      responses:
+        "201":
+          description: "Account created"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: "created" }
+                  id: { type: string }
+
+  /api/v1/ingest/transaction:
+    post:
+      summary: "Ingest Transaction"
+      security: [{ bearerAuth: [] }, { apiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionCreateRequest"
+      responses:
+        "201":
+          description: "Transaction recorded"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: "created" }
+                  transactionRef: { type: string }
+
+  /api/v1/trust/{accountId}:
+    get:
+      summary: "Get Trust Score"
+      security: [{ bearerAuth: [] }, { apiKeyAuth: [] }]
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "Trust score and AI explanation"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrustScore"
+
+  /api/v1/audit/proof-of-life:
+    post:
+      summary: "Proof of Life Audit"
+      security: [{ bearerAuth: [] }, { apiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [accountId]
+              properties:
+                accountId: { type: string }
+      responses:
+        "200":
+          description: "Full audit results"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditResult"
+
+  /api/v1/status/{transactionRef}:
+    get:
+      summary: "Transaction Status"
+      security: [{ bearerAuth: [] }, { apiKeyAuth: [] }]
+      parameters:
+        - name: transactionRef
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "Cross-referenced status from Squad and Vantage"
+
+  /api/v1/admin/flag/{id}:
+    post:
+      summary: "Flag Account"
+      security: [{ bearerAuth: [] }, { apiKeyAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "Account flagged"
+
+  /api/v1/admin/unflag/{id}:
+    post:
+      summary: "Unflag Account"
+      security: [{ bearerAuth: [] }, { apiKeyAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: "Account unflagged"
+
+  /api/v1/admin/flagged:
+    get:
+      summary: "List Flagged Accounts"
+      security: [{ bearerAuth: [] }, { apiKeyAuth: [] }]
+      responses:
+        "200":
+          description: "List of accounts"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+
+  /api/v1/admin/import/accounts:
+    post:
+      summary: "Batch Import Accounts"
+      security: [{ bearerAuth: [] }, { apiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchImportRequest"
+      responses:
+        "200":
+          description: "Accounts imported"
+
+  /api/v1/graph/network:
+    get:
+      summary: "Network Graph"
+      security: [{ bearerAuth: [] }, { apiKeyAuth: [] }]
+      parameters:
+        - name: accountId
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 100 }
+      responses:
+        "200":
+          description: "Graph subgraph JSON"
+
+  /api/v1/events:
+    get:
+      summary: "SSE Stream"
+      security: [{ bearerAuth: [] }, { apiKeyAuth: [] }]
+      description: "Server-Sent Events stream for real-time updates."
+      responses:
+        "200":
+          description: "SSE stream"
+          content:
+            text/event-stream:
+              schema: { type: string }
+
+  /squad/webhook:
+    post:
+      summary: "Squad Webhook"
+      description: "Ingest real-time transactions from Squad API. Requires HMAC verification."
+      responses:
+        "200":
+          description: "Webhook processed"
+
 components:
-  schemas: { }
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKeyAuth:
+      type: http
+      scheme: bearer
+      description: "API Key (VANTAGE_API_KEY)"
+
+  schemas:
+    Account:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string, nullable: true }
+        isBlacklisted: { type: boolean }
+        trustScore: { type: number }
+
+    AccountCreateRequest:
+      type: object
+      required: [id]
+      properties:
+        id: { type: string }
+        email: { type: string }
+        bvn: { type: string }
+        nin: { type: string }
+        deviceFingerprint: { type: string }
+        ipAddress: { type: string }
+
+    TransactionCreateRequest:
+      type: object
+      required: [accountId, counterpartyId, amount, transactionRef]
+      properties:
+        accountId: { type: string }
+        counterpartyId: { type: string }
+        counterpartyType: { type: string, enum: [MERCHANT, INDIVIDUAL, BILLER, VIRTUAL_ACCOUNT] }
+        amount: { type: number }
+        currency: { type: string, default: "NGN" }
+        timestamp: { type: string, format: "date-time" }
+        transactionRef: { type: string }
+        sessionId: { type: string }
+
+    TrustScore:
+      type: object
+      properties:
+        accountId: { type: string }
+        ts: { type: number }
+        tier: { type: string, enum: [GREEN, AMBER, RED] }
+        cpr: { type: number }
+        vvel: { type: number }
+        pdist: { type: number }
+        explanation: { $ref: "#/components/schemas/VerdictExplanation" }
+
+    VerdictExplanation:
+      type: object
+      properties:
+        verdict: { type: string }
+        summary: { type: string }
+        riskFactors: { type: array, items: { type: string } }
+        recommendedAction: { type: string }
+
+    AuditResult:
+      type: object
+      properties:
+        accountId: { type: string }
+        trustScore: { type: number }
+        tier: { type: string }
+        verdict: { type: string }
+        summary: { type: string }
+        riskFactors: { type: array, items: { type: string } }
+        recommendedAction: { type: string }
+
+    BatchImportRequest:
+      type: object
+      required: [accounts]
+      properties:
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountCreateRequest"

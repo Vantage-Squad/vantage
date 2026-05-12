@@ -1,12 +1,13 @@
 ktor:
   deployment:
-    port: 8080
+    port: 8081
   application:
     modules:
       - com.vantage.bootstrap.StartupKt.configureStartup
       - com.vantage.bootstrap.HttpKt.configureHttp
       - com.vantage.bootstrap.SerializationKt.configureSerialization
       - com.vantage.bootstrap.StatusPagesKt.configureStatusPages
+      - com.vantage.bootstrap.KoogKt.configureKoog
       - com.vantage.bootstrap.RoutingKt.configureRouting
 
 app:

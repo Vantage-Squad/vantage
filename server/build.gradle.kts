@@ -49,6 +49,7 @@ dependencies {
 
     // Koog AI agent
     implementation(libs.koog.agents)
+    implementation(libs.koog.ktor)
 
     // Dotenv
     implementation(libs.dotenv.kotlin)

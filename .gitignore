@@ -48,5 +48,8 @@ server/node_modules/
 server/dist/
 server/.env*
 
+# Root env with secrets (not to be committed)
+/.env
+
 # Server spec (internal reference, not for repo)
 docs/SPEC.md

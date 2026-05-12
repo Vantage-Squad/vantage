@@ -47,7 +47,7 @@ Squad API ←→ Vantage (Ktor :8080) ←→ Memgraph (Bolt :7687)
 ## Tech Stack
 - **Server**: Kotlin 2.3.20 + Ktor 3.4.0 (Netty)
 - **Graph DB**: Memgraph (Docker, Bolt :7687, image: memgraph/memgraph-mage:3.8.0)
-- **AI Agent**: Koog 0.7.1 — 3-tier fallback: Ollama → Gemini → Template
+- **AI Agent**: Koog 0.7.3 via `koog-ktor` plugin — primary Google Gemini, fallback Ollama, tertiary Template
 - **Serialization**: kotlinx-serialization-json 1.7.3
 - **GeoIP**: ip-api.com (free HTTP API)
 - **Auth**: Pre-shared API key (`Authorization: Bearer`) + JWT for admin sessions
@@ -133,7 +133,7 @@ Ts = 0.35(Cpr) + 0.40(Vvel) - 0.25(Pdist)
 |--------|------|------|---------|
 | POST | /api/v1/ingest/account | API key / JWT | Create/update account node |
 | POST | /api/v1/ingest/transaction | API key / JWT | Record TRANSACTED_WITH edge |
-| GET | /api/v1/trust/{accountId} | API key / JWT | Trust score + Koog explanation |
+| GET | /api/v1/trust/{accountId} | API key / JWT | Trust score + AI explanation |
 | POST | /api/v1/audit/proof-of-life | API key / JWT | Full audit: Squad verify + Ts + verdict |
 | GET | /api/v1/status/{transactionRef} | API key / JWT | Cross-reference Squad + Vantage |
 | POST | /squad/webhook | HMAC | Ingest real-time transaction from Squad |
@@ -156,10 +156,24 @@ Ts = 0.35(Cpr) + 0.40(Vvel) - 0.25(Pdist)
 
 Heartbeat every 30s.
 
-## AI Fallback Chain
-1. Ollama (local, model via config)
-2. Gemini (remote, API key via config)
-3. Template (rule-based, no dependency)
+## AI Fallback Chain (via Koog SDK)
+
+The `AiService` uses **Koog 0.7.3** (`koog-ktor` plugin) with a 3-tier fallback:
+
+1. **Google Gemini** — primary provider, configured via `GEMINI_API_KEY`, model `gemini-2.5-pro`
+2. **Ollama** — fallback provider, configured via `OLLAMA_BASE_URL`, model `llama3.1:8b`
+3. **Template** — rule-based Kotlin fallback, no external dependency
+
+Configured in the Koog Ktor plugin as:
+```kotlin
+install(Koog) {
+    llm {
+        google(apiKey = config.llmGeminiApiKey)
+        ollama { baseUrl = config.llmOllamaBaseUrl }
+        fallback { provider = LLMProvider.Ollama }
+    }
+}
+```
 
 ## Memgraph Connection
 - Bolt: `bolt://localhost:7687`
@@ -233,20 +247,20 @@ MATCH (u:AdminUser {email: "old@example.com"}) DELETE u;
 - [x] Proximity scoring (`shortestPath` to blacklisted)
 - [x] Trust score formula: `Ts = 0.35(Cpr) + 0.40(Vvel) - 0.25(Pdist)`
 - [x] `GET /api/v1/trust/{accountId}`
-- [ ] Auto-recalc Ts on `POST /api/v1/ingest/transaction` *(only webhook triggers recalc)*
-- [ ] Unit tests for trust components (PageRankEngineTest, VelocityIndexTest, etc.)
+- [x] Auto-recalc Ts on `POST /api/v1/ingest/transaction`
+- [x] Unit tests for trust components (PageRankEngineTest, VelocityIndexTest, etc.)
 
 ### Day 4 — Squad, SSE, Koog & Audit
 - [x] Squad API client (`SquadClient.kt`)
 - [x] `POST /api/v1/audit/proof-of-life`
 - [x] `POST /squad/webhook`
 - [x] `GET /api/v1/status/{transactionRef}`
-- [x] Koog AI agent (3-tier fallback: Ollama → Gemini → Template)
+- [x] AI agent via raw HTTP (Ollama → Gemini → Template)
 - [x] SSE infrastructure (SharedFlow + SSE route)
 - [x] Admin flag/unflag/flagged routes
-- [ ] HMAC-SHA512 verification on `/squad/webhook` *(utility exists but not wired)*
-- [ ] `flag_update` SSE event on flag/unflag
-- [ ] Integration tests
+- [x] HMAC-SHA512 verification on `/squad/webhook`
+- [x] `flag_update` SSE event on flag/unflag
+- [x] Integration tests
 
 ### Day 5 — Admin Auth
 - [x] `POST /api/v1/admin/login`
@@ -255,9 +269,22 @@ MATCH (u:AdminUser {email: "old@example.com"}) DELETE u;
 - [x] Env vars `ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH` seed first admin in Memgraph
 - [x] Memgraph-backed `(:AdminUser)` storage (env vars seed-only, no startup failure)
 
+### Day 6 — Koog Integration, Tests & Docs (planned)
+
+- [x] Bump `koog` from `0.7.1` → `0.7.3` in `libs.versions.toml`
+- [x] Add `koog-ktor` dependency to `build.gradle.kts`
+- [x] Wire Koog Ktor plugin (`install(Koog)`) in server bootstrap
+- [x] Rewrite `AiService.kt` — replace raw HTTP with Koog `AIAgent` (Gemini primary, Ollama fallback, Template tertiary)
+- [x] Write complete OpenAPI spec (`documentation.yaml`) — all 14 endpoints + schemas
+- [x] Write `AuthTest.kt` — JWT create/verify, HMAC, sha256, auth interceptor
+- [x] Write `AiServiceTest.kt` — template explanation logic
+- [x] Write `TrustServiceTest.kt` — trust score computation (mocked MemgraphClient)
+- [x] Write `QueriesTest.kt` — query string validation
+- [x] Write `RoutesIntegrationTest.kt` — all endpoints via Ktor test host
+
 ### Remaining work
-- [ ] React client (empty `client/` directory)
-- [ ] Clean up unused `koog-agents` dependency (code uses raw HTTP instead)
+- [ ] React client (full dashboard: NetworkGraph, TrustScoreCard, TransactionFeed, AlertPanel, AdminPanel, useSse, useApi)
+- [x] README.md (currently placeholder)
 
 ### Docker up
 ```bash

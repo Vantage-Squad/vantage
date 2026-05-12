@@ -12,6 +12,10 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sse.*
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
+import kotlinx.serialization.json.add
 
 fun Application.configureRouting() {
     install(SSE)
@@ -30,30 +34,43 @@ fun Application.configureRouting() {
             if (signature != null) {
                 val secret = AppContext.config.squadSecretKey
                 if (!verifyHmacSignature(bodyText.toByteArray(), signature, secret)) {
-                    call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid HMAC signature"))
+                    call.respond(HttpStatusCode.Unauthorized, buildJsonObject { put("error", "Invalid HMAC signature") })
                     return@post
                 }
             }
             val body = json.decodeFromString<Map<String, String>>(bodyText)
             val transactionRef = body["TransactionRef"] ?: body["transactionRef"] ?: run {
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "TransactionRef required"))
+                call.respond(HttpStatusCode.BadRequest, buildJsonObject { put("error", "TransactionRef required") })
                 return@post
             }
             val amount = body["amount"]?.toDoubleOrNull() ?: 0.0
             val accountId = body["email"] ?: "unknown"
             val ts = trustService.compute(accountId)
-            val eventData = json.encodeToString(mapOf(
-                "accountId" to accountId, "amount" to amount, "tier" to ts.tier.name
-            ))
+            
+            val eventData = buildJsonObject {
+                put("accountId", accountId)
+                put("amount", amount)
+                put("tier", ts.tier.name)
+            }.toString()
+            
             AppContext.sseService.emit("transaction", eventData)
+            
             if (ts.tier == Tier.RED) {
-                val alertData = json.encodeToString(mapOf(
-                    "accountId" to accountId, "tier" to "RED",
-                    "ts" to ts.ts, "riskFactors" to listOf("Trust score below 0.4 threshold")
-                ))
+                val alertData = buildJsonObject {
+                    put("accountId", accountId)
+                    put("tier", "RED")
+                    put("ts", ts.ts)
+                    putJsonArray("riskFactors") {
+                        add("Trust score below 0.4 threshold")
+                    }
+                }.toString()
                 AppContext.sseService.emit("alert", alertData)
             }
-            call.respond(mapOf("status" to "processed", "tier" to ts.tier.name))
+            
+            call.respond(buildJsonObject {
+                put("status", "processed")
+                put("tier", ts.tier.name)
+            })
         }
         get("/health") {
             call.respondText("""{"status":"ok","service":"vantage"}""", ContentType.Application.Json)

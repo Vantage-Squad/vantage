@@ -19,6 +19,7 @@ fun Application.configureStartup() {
     AppContext.config = appConfig
     AppContext.memgraph = memgraph
     AppContext.sseService = SseService()
+    AppContext.application = this
 
     monitor.subscribe(ApplicationStarted) {
         println("[Vantage] Server started. Running schema setup...")
