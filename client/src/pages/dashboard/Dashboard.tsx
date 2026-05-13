@@ -1,108 +1,79 @@
-import { logout } from "../../services/auth";
-import { useAppSelector } from "../../store/hooks";
+import { useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "../../store/hooks";
+import { incomingTransaction, incomingAlert } from "../../store/dashboardSlice";
+import { sseService } from "../../lib/sseService";
+import LiveFeedPanel from "../../components/LiveFeedPanel";
+import AlertPanel from "../../components/AlertPanel";
+import MetricCard from "../../components/MetricCard";
+import { Sparkles, Plus, CheckCircle2 } from "lucide-react";
 
 const Dashboard = () => {
-    const user = useAppSelector((s) => s.auth.user);
+    const dispatch = useAppDispatch();
+    const metrics = useAppSelector((state) => state.dashboard.metrics);
+
+    useEffect(() => {
+        sseService.start(
+            (t) => dispatch(incomingTransaction(t)),
+            (a) => dispatch(incomingAlert(a))
+        );
+        return () => sseService.stop();
+    }, [dispatch]);
 
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                width: "100%",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "var(--color-bg-canvas, #0d0d0f)",
-                gap: "24px",
-                fontFamily: "Inter, system-ui, sans-serif",
-            }}
-        >
-            <div
-                style={{
-                    background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: "16px",
-                    padding: "48px 56px",
-                    textAlign: "center",
-                    maxWidth: "480px",
-                    width: "100%",
-                    boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
-                }}
-            >
-                {/* Status badge */}
-                <div
-                    style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        background: "rgba(34, 197, 94, 0.12)",
-                        border: "1px solid rgba(34, 197, 94, 0.3)",
-                        borderRadius: "999px",
-                        padding: "6px 14px",
-                        marginBottom: "32px",
-                    }}
-                >
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
-                    <span style={{ color: "#22c55e", fontSize: "13px", fontWeight: 500, letterSpacing: "0.04em" }}>
-                        AUTHENTICATED
-                    </span>
+        <div className="flex h-full gap-[var(--spacing-lg)]">
+            {/* Left Column */}
+            <div className="w-[60%] h-full flex flex-col">
+                <LiveFeedPanel />
+            </div>
+
+            {/* Right Column */}
+            <div className="w-[40%] h-full flex flex-col gap-[var(--spacing-lg)]">
+                
+                {/* Metrics */}
+                <div className="grid grid-cols-2 gap-4 shrink-0">
+                    <div className="col-span-2">
+                        <MetricCard 
+                            label="FLAGGED TODAY" 
+                            value={metrics.flagged} 
+                            delta={metrics.flaggedDelta} 
+                            deltaPositive={false}
+                            accentColor="var(--color-status-danger)"
+                        >
+                            <div className="w-full max-w-[120px] h-1 bg-[var(--color-bg-raised)] rounded-full overflow-hidden self-end mb-1">
+                                <div className="h-full w-[65%] bg-[var(--color-status-danger)]" />
+                            </div>
+                        </MetricCard>
+                    </div>
+                    <MetricCard 
+                        label="UNDER WATCH" 
+                        value={new Intl.NumberFormat().format(metrics.watch)} 
+                        accentColor="var(--color-status-warning)"
+                    />
+                    <MetricCard 
+                        label="CLEARED" 
+                        value={new Intl.NumberFormat().format(metrics.cleared)} 
+                        accentColor="var(--color-status-safe)"
+                    >
+                        <CheckCircle2 size={16} color="var(--color-status-safe)" />
+                    </MetricCard>
                 </div>
 
-                <h1 style={{ color: "#fff", fontSize: "28px", fontWeight: 700, margin: "0 0 8px 0", letterSpacing: "-0.02em" }}>
-                    Vantage Dashboard
-                </h1>
-                <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "14px", margin: "0 0 32px 0" }}>
-                    Under construction — coming soon.
-                </p>
-
-                <div
-                    style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.06)",
-                        borderRadius: "10px",
-                        padding: "16px 20px",
-                        marginBottom: "32px",
-                        textAlign: "left",
-                    }}
-                >
-                    <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px", fontWeight: 600, letterSpacing: "0.08em", margin: "0 0 6px 0" }}>
-                        SIGNED IN AS
-                    </p>
-                    <p style={{ color: "#fff", fontSize: "15px", fontWeight: 500, margin: 0 }}>
-                        {user?.email ?? "—"}
-                    </p>
-                    <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "12px", margin: "4px 0 0 0", fontFamily: "monospace" }}>
-                        id: {user?.id ?? "—"}
-                    </p>
+                {/* Alerts */}
+                <div className="flex-1 min-h-0">
+                    <AlertPanel />
                 </div>
 
-                <button
-                    onClick={logout}
-                    style={{
-                        width: "100%",
-                        padding: "13px",
-                        background: "transparent",
-                        border: "1px solid rgba(239, 68, 68, 0.4)",
-                        borderRadius: "10px",
-                        color: "#ef4444",
-                        fontSize: "14px",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        letterSpacing: "0.02em",
-                        transition: "all 0.15s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-                        e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.6)";
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "transparent";
-                        e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.4)";
-                    }}
-                >
-                    Sign Out
-                </button>
+                {/* Actions */}
+                <div className="flex items-center gap-3 shrink-0">
+                    <button className="flex-1 flex items-center justify-center gap-2 bg-[var(--color-accent)] hover:opacity-90 transition-opacity text-white rounded-[var(--radius-default)] py-3 font-medium text-[var(--font-size-body)] tracking-wide">
+                        <Sparkles size={18} />
+                        RUN AI AUDIT
+                    </button>
+                    <button className="w-[48px] h-[48px] flex items-center justify-center rounded-[var(--radius-default)] bg-[var(--color-bg-raised)] border border-[var(--color-border-emphasis)] text-[var(--color-text-primary)] hover:bg-[var(--color-border-subtle)] transition-colors shrink-0">
+                        <Plus size={20} />
+                    </button>
+                </div>
+
             </div>
         </div>
     );

@@ -99,7 +99,7 @@ export async function login(email: string, password: string): Promise<void> {
 
 export async function logout(): Promise<void> {
     try {
-        const { stopSSE } = await import("./sseClient");
+        const { stopSSE } = await import("../lib/sseService");
         stopSSE();
 
     } catch {
