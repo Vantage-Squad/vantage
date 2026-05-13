@@ -1,0 +1,84 @@
+import type { Verdict } from '../types';
+
+export const mockVerdicts: Record<string, Verdict> = {
+  "992-XFA": {
+    nodeId: "992-XFA",
+    entityName: "J. Adeyemi",
+    trustScore: 0.12,
+    riskLevel: "CRITICAL RISK",
+    indicators: [
+      { label: "Network Velocity", score: -0.42 },
+      { label: "Origin Conflict", score: -0.31 },
+      { label: "Account Age Affinity", score: +0.09 },
+    ],
+    agentSummary: "Analysis of entity 992-XFA indicates high-frequency layered structural patterns typically seen in Smurfing operations.\n\nDetected 14 rapid hops across 3 jurisdictions in 480ms. Connection to known-bad node \"Ghost_Node_91\" confirmed via shared IP residue.\n\n// Recommendation: Immediate containment and forensic extraction of related sub-ledger.",
+    accountMeta: {
+      "Account ID": "8037-****-6791",
+      "Region": "Lagos, NG",
+      "Account Type": "Individual",
+      "Opened": "2021-03-14",
+      "Last Active": "Just now",
+      "Linked Devices": "3",
+    }
+  },
+  "8842-X": {
+    nodeId: "8842-X",
+    entityName: "A. Ibrahim",
+    trustScore: 0.09,
+    riskLevel: "CRITICAL RISK",
+    indicators: [
+      { label: "Burst Activity", score: -0.51 },
+      { label: "Multi-Region Hop", score: -0.38 },
+      { label: "Peer Association", score: -0.22 },
+    ],
+    agentSummary: "Entity 8842-X exhibits burst transaction patterns consistent with layered laundering. 34 transactions per minute detected across Seychelles, UK, and NG nodes.\n\nDirect association with known fraud cluster 'Raven-04' via shared device fingerprint.\n\n// Recommendation: Immediate freeze pending full cluster audit.",
+    accountMeta: {
+      "Account ID": "1107-****-1410",
+      "Region": "Abuja, NG",
+      "Account Type": "Business",
+      "Opened": "2022-07-01",
+      "Last Active": "2m ago",
+      "Linked Devices": "7",
+    }
+  },
+  "412-Z": {
+    nodeId: "412-Z",
+    entityName: "B. Okonkwo",
+    trustScore: 0.44,
+    riskLevel: "HIGH RISK",
+    indicators: [
+      { label: "Velocity Spike", score: -0.28 },
+      { label: "Jurisdiction Mismatch", score: -0.19 },
+      { label: "Transaction Recency", score: +0.11 },
+    ],
+    agentSummary: "Entity 412-Z shows moderate-high risk signals. Velocity spikes detected on 3 occasions in last 24h. Jurisdiction mismatch between registration and transaction origin.\n\nNo direct cluster association confirmed. Under active watch.\n\n// Recommendation: Monitor for 48h. Escalate if velocity exceeds threshold.",
+    accountMeta: {
+      "Account ID": "1189-****-4432",
+      "Region": "Port Harcourt, NG",
+      "Account Type": "Individual",
+      "Opened": "2020-11-22",
+      "Last Active": "15m ago",
+      "Linked Devices": "2",
+    }
+  },
+  "771-M": {
+    nodeId: "771-M",
+    entityName: "T. Mensah",
+    trustScore: 0.81,
+    riskLevel: "LOW RISK",
+    indicators: [
+      { label: "Network Consistency", score: +0.34 },
+      { label: "Transaction Pattern", score: +0.28 },
+      { label: "Peer Quality", score: +0.19 },
+    ],
+    agentSummary: "Entity 771-M exhibits normal transaction behaviour within established parameters. No anomalies detected in last 72h. Peer associations are clean.\n\n// No action required.",
+    accountMeta: {
+      "Account ID": "5543-****-2281",
+      "Region": "Accra, GH",
+      "Account Type": "Individual",
+      "Opened": "2019-05-10",
+      "Last Active": "30m ago",
+      "Linked Devices": "1",
+    }
+  }
+};
