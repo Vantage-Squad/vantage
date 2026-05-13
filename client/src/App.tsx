@@ -3,6 +3,7 @@ import { useAppSelector } from "./store/hooks";
 import Auth from "./pages/auth/Auth";
 import Dashboard from "./pages/dashboard/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AppShell from "./components/AppShell";
 
 function App() {
   const token = useAppSelector((s) => s.auth.token);
@@ -23,7 +24,9 @@ function App() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <AppShell>
+              <Dashboard />
+            </AppShell>
           </ProtectedRoute>
         }
       />
