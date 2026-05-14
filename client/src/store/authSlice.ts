@@ -4,7 +4,8 @@ export type AuthStatus = "idle" | "loading" | "error" | "success";
 
 export interface AuthUser {
     id : string;
-    email : string ;
+    email : string;
+    name?: string;
 }
 
 export interface AuthState {
