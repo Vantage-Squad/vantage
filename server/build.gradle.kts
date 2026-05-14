@@ -44,7 +44,7 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)
 
-    // Memgraph (Neo4j Bolt driver)
+    // Neo4j Bolt driver
     implementation(libs.neo4j.driver)
 
     // Koog AI agent

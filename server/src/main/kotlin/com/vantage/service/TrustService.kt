@@ -45,10 +45,10 @@ class TrustService {
 
     private suspend fun computeVelocity(accountId: String): Double {
         val windows = listOf(
-            "P0Y0M0DT0H1M0S" to 30,
-            "P0Y0M0DT0H5M0S" to 20,
-            "P0Y0M0DT1H0M0S" to 10,
-            "P0Y0M0DT24H0M0S" to 5
+            "PT1M" to 30,
+            "PT5M" to 20,
+            "PT1H" to 10,
+            "PT24H" to 5
         )
         var weightedSum = 0.0
         var totalWeight = 0

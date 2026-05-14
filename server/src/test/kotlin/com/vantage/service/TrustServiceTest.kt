@@ -36,10 +36,10 @@ class TrustServiceTest {
             mapOf("id" to "acc1", "rank" to 0.9)
         )
         // Velocity result (4 windows)
-        coEvery { memgraph.readSingle(any(), match { it["window"] == "P0Y0M0DT0H1M0S" }) } returns mapOf("count" to 1)
-        coEvery { memgraph.readSingle(any(), match { it["window"] == "P0Y0M0DT0H5M0S" }) } returns mapOf("count" to 2)
-        coEvery { memgraph.readSingle(any(), match { it["window"] == "P0Y0M0DT1H0M0S" }) } returns mapOf("count" to 3)
-        coEvery { memgraph.readSingle(any(), match { it["window"] == "P0Y0M0DT24H0M0S" }) } returns mapOf("count" to 4)
+        coEvery { memgraph.readSingle(any(), match { it["window"] == "PT1M" }) } returns mapOf("count" to 1)
+        coEvery { memgraph.readSingle(any(), match { it["window"] == "PT5M" }) } returns mapOf("count" to 2)
+        coEvery { memgraph.readSingle(any(), match { it["window"] == "PT1H" }) } returns mapOf("count" to 3)
+        coEvery { memgraph.readSingle(any(), match { it["window"] == "PT24H" }) } returns mapOf("count" to 4)
         // Proximity result
         coEvery { memgraph.readSingle(any(), match { it["id"] == "acc1" && it.containsKey("distance") == false }) } returns null // No blacklisted nearby
 

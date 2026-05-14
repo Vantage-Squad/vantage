@@ -3,6 +3,7 @@ package com.vantage.db
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.neo4j.driver.*
+import org.neo4j.driver.SessionConfig
 
 class MemgraphClient(
     private val boltUri: String,
@@ -18,7 +19,7 @@ class MemgraphClient(
 
     suspend fun query(cypher: String, params: Map<String, Any?> = emptyMap()): List<Map<String, Any>> =
         withContext(Dispatchers.IO) {
-            driver.session().use { session ->
+            driver.session(SessionConfig.defaultConfig()).use { session ->
                 session.run(cypher, params).list().map { record ->
                     record.keys().associateWith { key ->
                         record.get(key).asObject()
@@ -29,14 +30,14 @@ class MemgraphClient(
 
     suspend fun execute(cypher: String, params: Map<String, Any?> = emptyMap()) =
         withContext(Dispatchers.IO) {
-            driver.session().use { session ->
+            driver.session(SessionConfig.defaultConfig()).use { session ->
                 session.run(cypher, params).consume()
             }
         }
 
     suspend fun readSingle(cypher: String, params: Map<String, Any?> = emptyMap()): Map<String, Any>? =
         withContext(Dispatchers.IO) {
-            driver.session().use { session ->
+            driver.session(SessionConfig.defaultConfig()).use { session ->
                 val results = session.run(cypher, params).list()
                 if (results.isEmpty()) null
                 else results.first().keys().associateWith { key ->

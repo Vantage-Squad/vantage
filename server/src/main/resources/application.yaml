@@ -1,6 +1,6 @@
 ktor:
   deployment:
-    port: 8081
+    port: ${PORT:-8081}
   application:
     modules:
       - com.vantage.bootstrap.StartupKt.configureStartup
@@ -17,7 +17,7 @@ app:
     secretKey: "${SQUAD_SECRET_KEY:-}"
     publicKey: "${SQUAD_PUBLIC_KEY:-}"
   memgraph:
-    boltUri: "bolt://localhost:7687"
+    boltUri: "${MEMGRAPH_BOLT_URI:-bolt://localhost:7687}"
     username: ""
     password: ""
   trustScore:
@@ -36,4 +36,7 @@ app:
     gemini:
       apiKey: "${GEMINI_API_KEY:-}"
       model: "gemini-2.5-pro"
+    groq:
+      apiKey: "${GROQ_API_KEY:-}"
+      model: "${GROQ_MODEL:-llama-3.3-70b-versatile}"
 

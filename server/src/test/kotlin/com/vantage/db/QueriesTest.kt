@@ -30,7 +30,9 @@ class QueriesTest {
     @Test
     fun testPageRankQuery() {
         val query = Queries.pageRank()
-        assertTrue(query.contains("CALL page_rank.get"))
+        assertTrue(query.contains("MATCH (a:Account)"))
+        assertTrue(query.contains("TRANSACTED_WITH"))
+        assertTrue(query.contains("rank"))
     }
 
     @Test

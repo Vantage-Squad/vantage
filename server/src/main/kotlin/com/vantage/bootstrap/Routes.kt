@@ -202,6 +202,7 @@ fun Route.configureApiRoutes() {
         call.respondText(json.encodeToString(accounts), ContentType.Application.Json)
     }
 
+
     post("/admin/import/accounts") {
         val req = call.receive<BatchImportRequest>()
         var imported = 0
@@ -228,29 +229,35 @@ fun Route.configureApiRoutes() {
         val accountId = call.request.queryParameters["accountId"]
         val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 100
         val results = memgraph.query(Queries.graphNetwork(), mapOf("accountId" to accountId, "limit" to limit))
-        val nodes = mutableListOf<Map<String, Any?>>()
-        val edges = mutableListOf<Map<String, Any?>>()
+        val nodes = mutableListOf<kotlinx.serialization.json.JsonObject>()
+        val edges = mutableListOf<kotlinx.serialization.json.JsonObject>()
         for (row in results) {
             val a = row["a"] as? Map<*, *>
             val t = row["t"] as? Map<*, *>
             val c = row["c"] as? Map<*, *>
             if (a != null) {
-                nodes.add(mapOf(
-                    "id" to (a["id"] ?: ""), "type" to "Account",
-                    "trustScore" to (a["trustScore"] ?: 0.5), "isBlacklisted" to (a["isBlacklisted"] ?: false)
-                ))
+                nodes.add(buildJsonObject {
+                    put("id", a["id"] as? String ?: "")
+                    put("type", "Account")
+                    put("trustScore", (a["trustScore"] as? Number)?.toDouble() ?: 0.5)
+                    put("isBlacklisted", a["isBlacklisted"] as? Boolean ?: false)
+                })
             }
             if (c != null) {
-                nodes.add(mapOf(
-                    "id" to (c["id"] ?: ""), "type" to "Counterparty",
-                    "name" to (c["name"] ?: ""), "isBlacklisted" to (c["isBlacklisted"] ?: false)
-                ))
+                nodes.add(buildJsonObject {
+                    put("id", c["id"] as? String ?: "")
+                    put("type", "Counterparty")
+                    put("name", c["name"] as? String ?: "")
+                    put("isBlacklisted", c["isBlacklisted"] as? Boolean ?: false)
+                })
             }
             if (t != null && a != null && c != null) {
-                edges.add(mapOf(
-                    "source" to (a["id"] ?: ""), "target" to (c["id"] ?: ""),
-                    "amount" to (t["amount"] ?: 0), "currency" to (t["currency"] ?: "NGN")
-                ))
+                edges.add(buildJsonObject {
+                    put("source", a["id"] as? String ?: "")
+                    put("target", c["id"] as? String ?: "")
+                    put("amount", (t["amount"] as? Number)?.toDouble() ?: 0.0)
+                    put("currency", t["currency"] as? String ?: "NGN")
+                })
             }
         }
         call.respondText(json.encodeToString(mapOf("nodes" to nodes, "edges" to edges)), ContentType.Application.Json)

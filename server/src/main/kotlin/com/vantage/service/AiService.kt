@@ -17,12 +17,24 @@ class AiService {
     // Retrieve the Koog plugin instance
     private val koog = application.plugin(Koog)
     
-    // Build an agent using the shared executor and a default model
+    // Select model based on available provider: Groq > Ollama
+    private val selectedModel: LLModel = if (config.llmGroqApiKey.isNotBlank()) {
+        LLModel(LLMProvider.OpenAI, config.llmGroqModel, emptyList(), null, null)
+    } else {
+        LLModel(LLMProvider.Ollama, "llama3.1:8b", emptyList(), null, null)
+    }
+    
+    // Build an agent using the shared executor and the best available model
     private val agent = AIAgent.builder()
         .promptExecutor(koog.promptExecutor)
-        .llmModel(LLModel(LLMProvider.Ollama, "llama3.1:8b", emptyList(), null, null))
+        .llmModel(selectedModel)
         .systemPrompt("You are Vantage, a professional fraud detection assistant for fintech security operations. Provide clear, concise, and technical risk summaries.")
         .build()
+
+    init {
+        val providerName = if (config.llmGroqApiKey.isNotBlank()) "Groq (${config.llmGroqModel})" else "Ollama (llama3.1:8b)"
+        println("[AiService] Using LLM provider: $providerName")
+    }
 
     suspend fun explain(ts: TrustScore): VerdictExplanation {
         val promptText = buildPrompt(ts)

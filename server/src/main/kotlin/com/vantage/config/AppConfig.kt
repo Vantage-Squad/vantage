@@ -15,9 +15,9 @@ class AppConfig(config: ApplicationConfig) {
     val squadSecretKey: String = env("SQUAD_SECRET_KEY") ?: ""
     val squadPublicKey: String = env("SQUAD_PUBLIC_KEY") ?: ""
 
-    val memgraphBoltUri: String = env("MEMGRAPH_BOLT_URI") ?: "bolt://localhost:7687"
-    val memgraphUsername: String = env("MEMGRAPH_USERNAME") ?: ""
-    val memgraphPassword: String = env("MEMGRAPH_PASSWORD") ?: ""
+    val memgraphBoltUri: String = env("NEO4J_BOLT_URI") ?: env("MEMGRAPH_BOLT_URI") ?: "bolt://localhost:7687"
+    val memgraphUsername: String = env("NEO4J_USERNAME") ?: env("MEMGRAPH_USERNAME") ?: ""
+    val memgraphPassword: String = env("NEO4J_PASSWORD") ?: env("MEMGRAPH_PASSWORD") ?: ""
 
     val trustScoreAlpha: Double = 0.35
     val trustScoreBeta: Double = 0.40
@@ -29,6 +29,8 @@ class AppConfig(config: ApplicationConfig) {
     val llmOllamaModel: String = env("OLLAMA_MODEL") ?: "llama3.1:8b"
     val llmOllamaBaseUrl: String = env("OLLAMA_BASE_URL") ?: "http://localhost:11434"
     val llmGeminiApiKey: String = env("GEMINI_API_KEY") ?: ""
+    val llmGroqApiKey: String = env("GROQ_API_KEY") ?: ""
+    val llmGroqModel: String = env("GROQ_MODEL") ?: "llama-3.3-70b-versatile"
 
     val adminEmail: String? = env("ADMIN_EMAIL")
     val adminPasswordHash: String? = env("ADMIN_PASSWORD_HASH")

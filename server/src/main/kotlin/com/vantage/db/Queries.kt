@@ -69,9 +69,14 @@ object Queries {
     """.trimIndent()
 
     fun pageRank() = """
-        CALL page_rank.get("TRANSACTED_WITH", ["Account"], ["Counterparty"], 0.85)
-        YIELD node, rank
-        RETURN node.id AS id, rank
+        MATCH (a:Account)
+        OPTIONAL MATCH (a)-[t:TRANSACTED_WITH]->()
+        WITH a, count(t) AS degree
+        OPTIONAL MATCH ()-[incoming:TRANSACTED_WITH]->(a)
+        WITH a, degree + count(incoming) AS totalDegree
+        WITH collect({id: a.id, degree: totalDegree}) AS nodes, max(totalDegree) AS maxDegree
+        UNWIND nodes AS n
+        RETURN n.id AS id, CASE WHEN maxDegree > 0 THEN toFloat(n.degree) / maxDegree ELSE 0.0 END AS rank
     """.trimIndent()
 
     fun proximityToBlacklisted() = """

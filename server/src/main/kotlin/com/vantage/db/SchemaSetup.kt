@@ -6,10 +6,10 @@ class SchemaSetup(private val client: MemgraphClient) {
 
     suspend fun run() {
         val queries = listOf(
-            "CREATE INDEX ON :Account(id);",
-            "CREATE INDEX ON :Account(email);",
-            "CREATE INDEX ON :Counterparty(id);",
-            "CREATE INDEX ON :AdminUser(email);"
+            "CREATE INDEX account_id IF NOT EXISTS FOR (a:Account) ON (a.id)",
+            "CREATE INDEX account_email IF NOT EXISTS FOR (a:Account) ON (a.email)",
+            "CREATE INDEX counterparty_id IF NOT EXISTS FOR (c:Counterparty) ON (c.id)",
+            "CREATE INDEX admin_email IF NOT EXISTS FOR (u:AdminUser) ON (u.email)"
         )
         for (q in queries) {
             try {
