@@ -15,9 +15,9 @@ class AppConfig(config: ApplicationConfig) {
     val squadSecretKey: String = env("SQUAD_SECRET_KEY") ?: ""
     val squadPublicKey: String = env("SQUAD_PUBLIC_KEY") ?: ""
 
-    val memgraphBoltUri: String = env("NEO4J_BOLT_URI") ?: env("MEMGRAPH_BOLT_URI") ?: "bolt://localhost:7687"
-    val memgraphUsername: String = env("NEO4J_USERNAME") ?: env("MEMGRAPH_USERNAME") ?: ""
-    val memgraphPassword: String = env("NEO4J_PASSWORD") ?: env("MEMGRAPH_PASSWORD") ?: ""
+    val memgraphBoltUri: String = env("NEO4J_BOLT_URI") ?: env("MEMGRAPH_BOLT_URI") ?: prop(config, "app.memgraph.boltUri") ?: "bolt://localhost:7687"
+    val memgraphUsername: String = env("NEO4J_USERNAME") ?: env("MEMGRAPH_USERNAME") ?: prop(config, "app.memgraph.username") ?: ""
+    val memgraphPassword: String = env("NEO4J_PASSWORD") ?: env("MEMGRAPH_PASSWORD") ?: prop(config, "app.memgraph.password") ?: ""
 
     val trustScoreAlpha: Double = 0.35
     val trustScoreBeta: Double = 0.40

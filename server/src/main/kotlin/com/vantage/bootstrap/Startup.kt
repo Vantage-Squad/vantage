@@ -15,6 +15,8 @@ fun Application.configureStartup() {
         appConfig.memgraphUsername,
         appConfig.memgraphPassword
     )
+    val sanitizedUri = appConfig.memgraphBoltUri.replace(Regex("//.*@"), "//******@")
+    println("[Vantage] Initializing database connection to: $sanitizedUri")
 
     AppContext.config = appConfig
     AppContext.memgraph = memgraph

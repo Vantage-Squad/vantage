@@ -17,9 +17,9 @@ app:
     secretKey: "${SQUAD_SECRET_KEY:-}"
     publicKey: "${SQUAD_PUBLIC_KEY:-}"
   memgraph:
-    boltUri: "${MEMGRAPH_BOLT_URI:-bolt://localhost:7687}"
-    username: ""
-    password: ""
+    boltUri: "${NEO4J_BOLT_URI:-${MEMGRAPH_BOLT_URI:-bolt://localhost:7687}}"
+    username: "${NEO4J_USERNAME:-${MEMGRAPH_USERNAME:-}}"
+    password: "${NEO4J_PASSWORD:-${MEMGRAPH_PASSWORD:-}}"
   trustScore:
     alpha: 0.35
     beta: 0.40
