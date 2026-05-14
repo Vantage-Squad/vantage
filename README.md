@@ -1,7 +1,5 @@
 # Vantage — AI-Powered Fraud Detection
 
-UI Design: https://stitch.withgoogle.com/projects/17141834855763741284
-
 Vantage is an AI-powered audit layer that detects mule accounts and synthetic identities in Nigerian fintech using graph network analysis. It integrates with the Squad API to provide real-time transaction monitoring and trust scoring.
 
 ## Key Features
