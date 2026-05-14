@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from "react-router";
 import { useAppSelector } from "./store/hooks";
 import Auth from "./pages/auth/Auth";
 import Dashboard from "./pages/dashboard/Dashboard";
+import Graph from "./pages/Graph";
+import Verdict from "./pages/verdict/Verdict";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppShell from "./components/AppShell";
 
@@ -19,13 +21,37 @@ function App() {
         element={token ? <Navigate to="/dashboard" replace /> : <Auth />}
       />
 
-      {/* Protected */}
+      {/* Protected: Dashboard */}
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
             <AppShell>
               <Dashboard />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected: Network Graph */}
+      <Route
+        path="/network-forensic"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <Graph />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected: Standalone Verdict page */}
+      <Route
+        path="/verdict/:id"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <Verdict />
             </AppShell>
           </ProtectedRoute>
         }

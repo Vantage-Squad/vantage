@@ -16,131 +16,138 @@ interface GraphCanvasProps {
   searchQuery: string;
 }
 
+// Solid fill colours per status (no icon, just a clean dot)
+const STATUS_COLOR: Record<string, string> = {
+  flagged: '#EF4444',   // red
+  watch:   '#F59E0B',   // amber
+  clean:   '#22C55E',   // green
+  default: '#1C2845',
+};
+
+const STATUS_SIZE: Record<string, number> = {
+  flagged: 44,
+  watch:   36,
+  clean:   28,
+  default: 28,
+};
+
 const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
   graphData,
   selectedNodeId,
   onNodeClick,
   filterStatuses,
-  searchQuery
+  searchQuery,
 }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
-  
   const [tooltip, setTooltip] = useState<{ id: string; label: string; x: number; y: number } | null>(null);
-  const [pulsingNodes, setPulsingNodes] = useState<{ id: string; x: number; y: number }[]>([]);
+  const [pulsingNodes, setPulsingNodes] = useState<{ id: string; x: number; y: number; size: number }[]>([]);
 
   useImperativeHandle(ref, () => ({
-    zoomIn: () => {
-      if (cyRef.current) {
-        cyRef.current.zoom(cyRef.current.zoom() * 1.2);
-      }
-    },
-    zoomOut: () => {
-      if (cyRef.current) {
-        cyRef.current.zoom(cyRef.current.zoom() * 0.8);
-      }
-    },
+    zoomIn: () => cyRef.current?.zoom(cyRef.current.zoom() * 1.25),
+    zoomOut: () => cyRef.current?.zoom(cyRef.current.zoom() * 0.8),
     fitFlagged: () => {
-      if (cyRef.current) {
-        cyRef.current.layout({ name: 'cose', animate: true }).run();
+      const cy = cyRef.current;
+      if (!cy) return;
+      const flagged = cy.nodes('[status="flagged"]:visible');
+      if (flagged.length > 0) {
+        cy.fit(flagged, 80);
+      } else {
+        cy.fit(cy.elements(), 60);
       }
-    }
+    },
   }));
 
-  // Initialize Cytoscape
+  // Initialize Cytoscape once
   useEffect(() => {
     if (!containerRef.current) return;
 
     const cy = cytoscape({
       container: containerRef.current,
       style: [
+        // ── Base node: solid filled circle, no label content override ──
         {
           selector: 'node',
           style: {
             'shape': 'ellipse',
-            'background-color': '#1C2845',
-            'border-width': 2,
-            'border-color': '#2D4270',
-            'width': 32,
-            'height': 32,
+            'background-color': STATUS_COLOR.default,
+            'border-width': 0,
+            'width': STATUS_SIZE.default,
+            'height': STATUS_SIZE.default,
             'label': 'data(label)',
             'color': '#8BA3C7',
             'font-size': '11px',
+            'font-family': 'Inter, ui-sans-serif, sans-serif',
             'text-valign': 'bottom',
             'text-margin-y': 6,
             'text-background-opacity': 0,
-          }
+            // Remove any emoji content functions; use plain label
+            'content': 'data(label)',
+          },
         },
+        // ── Status: flagged (red) ──
         {
           selector: 'node[status="flagged"]',
           style: {
-            'background-color': '#EF4444',
-            'border-width': 3,
-            'border-color': '#EF4444',
-            'width': 48,
-            'height': 48,
-          }
+            'background-color': STATUS_COLOR.flagged,
+            'width': STATUS_SIZE.flagged,
+            'height': STATUS_SIZE.flagged,
+          },
         },
+        // ── Status: watch (amber) ──
         {
           selector: 'node[status="watch"]',
           style: {
-            'background-color': '#F59E0B',
+            'background-color': STATUS_COLOR.watch,
+            'width': STATUS_SIZE.watch,
+            'height': STATUS_SIZE.watch,
+          },
+        },
+        // ── Status: clean (green) ──
+        {
+          selector: 'node[status="clean"]',
+          style: {
+            'background-color': STATUS_COLOR.clean,
+            'width': STATUS_SIZE.clean,
+            'height': STATUS_SIZE.clean,
+          },
+        },
+        // ── Selected highlight ──
+        {
+          selector: '.selected',
+          style: {
             'border-width': 3,
-            'border-color': '#F59E0B',
-            'width': 40,
-            'height': 40,
-          }
+            'border-color': '#4F9CF9',
+          },
         },
+        // ── Search highlight ──
         {
-          selector: 'node[type="account"]',
+          selector: '.highlighted',
           style: {
-            'content': (ele) => ele.data('label') ? `\u{1F464}\n${ele.data('label')}` : '\u{1F464}',
-            'text-wrap': 'wrap',
-          }
+            'border-width': 3,
+            'border-color': '#a5c8ff',
+          },
         },
-        {
-          selector: 'node[type="ip"]',
-          style: {
-            'content': (ele) => ele.data('label') ? `IP\n${ele.data('label')}` : 'IP',
-            'text-wrap': 'wrap',
-          }
-        },
-        {
-          selector: 'node[type="device"]',
-          style: {
-            'content': (ele) => ele.data('label') ? `DEV\n${ele.data('label')}` : 'DEV',
-            'text-wrap': 'wrap',
-          }
-        },
+        // ── Edges: normal ──
         {
           selector: 'edge',
           style: {
             'width': 1.5,
-            'line-color': '#2D4270',
+            'line-color': '#1E2D50',
             'curve-style': 'bezier',
-          }
+            'opacity': 0.7,
+          },
         },
+        // ── Edges: suspicious (connects to flagged node) ──
         {
           selector: 'edge[?suspicious]',
           style: {
             'width': 2,
             'line-color': '#EF4444',
             'line-style': 'dashed',
-          }
+            'opacity': 0.6,
+          },
         },
-        {
-          selector: '.selected',
-          style: {
-            'border-width': 4,
-            'border-color': '#4F9CF9',
-          }
-        },
-        {
-          selector: '.highlighted',
-          style: {
-            'border-width': 5,
-          }
-        }
       ],
       layout: { name: 'preset' },
       userZoomingEnabled: true,
@@ -149,52 +156,40 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
     });
 
     cy.on('tap', 'node', (e) => {
-      const node = e.target;
-      onNodeClick(node.id());
+      onNodeClick(e.target.id());
     });
 
     cy.on('mouseover', 'node', (e) => {
       const node = e.target;
       const pos = node.renderedPosition();
-      setTooltip({
-        id: node.id(),
-        label: node.data('label'),
-        x: pos.x,
-        y: pos.y
-      });
+      setTooltip({ id: node.id(), label: node.data('label'), x: pos.x, y: pos.y });
     });
 
-    cy.on('mouseout', 'node', () => {
-      setTooltip(null);
-    });
+    cy.on('mouseout', 'node', () => setTooltip(null));
 
+    // Update pulse overlay positions whenever cytoscape renders
     cy.on('render', () => {
-      const containerPos = containerRef.current?.getBoundingClientRect();
-      if (!containerPos) return;
-
-      const flaggedNodes = cy.nodes('[status="flagged"]:visible');
-      const positions = flaggedNodes.map(n => {
-        const pos = n.renderedPosition();
-        return { id: n.id(), x: pos.x, y: pos.y };
-      });
-      setPulsingNodes(positions);
+      const flagged = cy.nodes('[status="flagged"]:visible');
+      setPulsingNodes(
+        flagged.map(n => {
+          const pos = n.renderedPosition();
+          return { id: n.id(), x: pos.x, y: pos.y, size: STATUS_SIZE.flagged };
+        })
+      );
     });
 
     cyRef.current = cy;
-
-    return () => {
-      cy.destroy();
-      cyRef.current = null;
-    };
+    return () => { cy.destroy(); cyRef.current = null; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sync Data
+  // Sync graph data + auto-center on most critical cluster on first load
   useEffect(() => {
-    if (!cyRef.current) return;
     const cy = cyRef.current;
+    if (!cy) return;
 
     cy.batch(() => {
-      // Remove elements not in data
+      // Remove stale elements
       const nodeIds = new Set(graphData.nodes.map(n => n.id));
       const edgeIds = new Set(graphData.edges.map(e => e.id));
       cy.elements().forEach(ele => {
@@ -202,7 +197,7 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
         if (ele.isEdge() && !edgeIds.has(ele.id())) cy.remove(ele);
       });
 
-      // Add or update nodes
+      // Upsert nodes
       graphData.nodes.forEach(node => {
         const existing = cy.getElementById(node.id);
         if (existing.length > 0) {
@@ -212,7 +207,7 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
         }
       });
 
-      // Add or update edges
+      // Upsert edges
       graphData.edges.forEach(edge => {
         const existing = cy.getElementById(edge.id);
         if (existing.length > 0) {
@@ -223,14 +218,30 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
       });
     });
 
-    cy.layout({ name: 'cose', animate: false }).run();
+    // Layout then auto-fit on the most critical cluster
+    cy.layout({
+      name: 'cose',
+      animate: false,
+      randomize: false,
+      nodeRepulsion: () => 6000,
+      idealEdgeLength: () => 80,
+    }).run();
+
+    // After layout, zoom to the flagged cluster (most critical)
+    requestAnimationFrame(() => {
+      const flagged = cy.nodes('[status="flagged"]:visible');
+      if (flagged.length > 0) {
+        cy.fit(flagged, 100);
+      } else {
+        cy.fit(cy.elements(), 60);
+      }
+    });
   }, [graphData]);
 
-  // Sync Filters
+  // Sync filters
   useEffect(() => {
-    if (!cyRef.current) return;
     const cy = cyRef.current;
-
+    if (!cy) return;
     cy.batch(() => {
       cy.nodes().forEach(node => {
         if (filterStatuses.includes(node.data('status'))) {
@@ -242,33 +253,27 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
     });
   }, [filterStatuses]);
 
-  // Sync Selection
+  // Sync selection
   useEffect(() => {
-    if (!cyRef.current) return;
     const cy = cyRef.current;
-
+    if (!cy) return;
     cy.batch(() => {
       cy.nodes().removeClass('selected');
-      if (selectedNodeId) {
-        cy.getElementById(selectedNodeId).addClass('selected');
-      }
+      if (selectedNodeId) cy.getElementById(selectedNodeId).addClass('selected');
     });
   }, [selectedNodeId]);
 
-  // Sync Search
+  // Sync search
   useEffect(() => {
-    if (!cyRef.current) return;
     const cy = cyRef.current;
-
+    if (!cy) return;
     cy.batch(() => cy.nodes().removeClass('highlighted'));
-
     if (searchQuery.trim().length > 0) {
       const q = searchQuery.toLowerCase();
-      const match = cy.nodes().filter(n => 
-        (n.data('label') && n.data('label').toLowerCase().includes(q)) || 
+      const match = cy.nodes().filter(n =>
+        (n.data('label') && n.data('label').toLowerCase().includes(q)) ||
         n.id().toLowerCase().includes(q)
       ).first();
-
       if (match.length > 0 && match.visible()) {
         match.addClass('highlighted');
         cy.center(match);
@@ -278,42 +283,51 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
   }, [searchQuery]);
 
   return (
-    <div className="relative w-full h-full bg-[var(--color-bg-canvas)] overflow-hidden">
+    <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--color-bg-canvas)' }}>
       <div ref={containerRef} className="absolute inset-0" />
 
-      {/* Pulse Overlays */}
+      {/* CSS-animated pulse rings for flagged/critical nodes only */}
       {pulsingNodes.map(pos => (
-        <div 
+        <div
           key={pos.id}
-          className="absolute w-12 h-12 rounded-full border-2 border-[var(--color-status-danger)] pointer-events-none"
+          className="absolute rounded-full pointer-events-none"
           style={{
+            width: pos.size,
+            height: pos.size,
             left: pos.x,
             top: pos.y,
             transform: 'translate(-50%, -50%)',
-            animation: 'node-pulse 1.2s ease-in-out infinite'
+            border: '2px solid #EF4444',
+            animation: 'criticalPulse 1.4s ease-out infinite',
           }}
         />
       ))}
 
-      {/* Tooltip Overlay */}
+      {/* Tooltip */}
       {tooltip && (
-        <div 
-          className="absolute z-50 pointer-events-none bg-[var(--color-bg-card)] border border-[var(--color-border-subtle)] rounded-[var(--radius-default)] px-[var(--spacing-sm)] py-[var(--spacing-micro)] shadow-lg"
+        <div
+          className="absolute z-50 pointer-events-none rounded-[var(--radius-default)] px-3 py-1.5 shadow-lg"
           style={{
-            left: tooltip.x + 15,
-            top: tooltip.y + 15,
+            left: tooltip.x + 16,
+            top: tooltip.y + 16,
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border-subtle)',
           }}
         >
-          <span className="text-[var(--font-size-caption)] text-[var(--color-text-primary)] whitespace-nowrap">
-            {tooltip.label} (ID: {tooltip.id})
-          </span>
+          <div style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-text-primary)', whiteSpace: 'nowrap', fontWeight: 500 }}>
+            {tooltip.label}
+          </div>
+          <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontFamily: 'monospace' }}>
+            ID: {tooltip.id}
+          </div>
         </div>
       )}
-      
+
       <style>{`
-        @keyframes node-pulse {
-          0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-          100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        @keyframes criticalPulse {
+          0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.9; }
+          60%  { transform: translate(-50%, -50%) scale(1.8); opacity: 0.3; }
+          100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
         }
       `}</style>
     </div>

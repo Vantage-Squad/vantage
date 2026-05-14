@@ -5,7 +5,7 @@ import { sseService } from "../../lib/sseService";
 import LiveFeedPanel from "../../components/LiveFeedPanel";
 import AlertPanel from "../../components/AlertPanel";
 import MetricCard from "../../components/MetricCard";
-import { Sparkles, Plus, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 const Dashboard = () => {
     const dispatch = useAppDispatch();
@@ -26,10 +26,10 @@ const Dashboard = () => {
                 <LiveFeedPanel />
             </div>
 
-            {/* Right Column */}
-            <div className="w-[40%] h-full flex flex-col gap-[var(--spacing-lg)]">
+            {/* Right Column — fixed height, only alert list scrolls */}
+            <div className="w-[40%] h-full flex flex-col gap-[var(--spacing-lg)] overflow-hidden">
                 
-                {/* Metrics */}
+                {/* Metrics — pinned, never scrolls */}
                 <div className="grid grid-cols-2 gap-4 shrink-0">
                     <div className="col-span-2">
                         <MetricCard 
@@ -58,20 +58,9 @@ const Dashboard = () => {
                     </MetricCard>
                 </div>
 
-                {/* Alerts */}
-                <div className="flex-1 min-h-0">
+                {/* Alerts — this section alone scrolls */}
+                <div className="flex-1 min-h-0 overflow-hidden">
                     <AlertPanel />
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-3 shrink-0">
-                    <button className="flex-1 flex items-center justify-center gap-2 bg-[var(--color-accent)] hover:opacity-90 transition-opacity text-white rounded-[var(--radius-default)] py-3 font-medium text-[var(--font-size-body)] tracking-wide">
-                        <Sparkles size={18} />
-                        RUN AI AUDIT
-                    </button>
-                    <button className="w-[48px] h-[48px] flex items-center justify-center rounded-[var(--radius-default)] bg-[var(--color-bg-raised)] border border-[var(--color-border-emphasis)] text-[var(--color-text-primary)] hover:bg-[var(--color-border-subtle)] transition-colors shrink-0">
-                        <Plus size={20} />
-                    </button>
                 </div>
 
             </div>

@@ -79,8 +79,8 @@ export const sseService: SSEService = {
 
                         onTransaction({
                             id: crypto.randomUUID(),
-                            name: "User " + data.accountId.substring(0, 5),
-                            accountId: data.accountId,
+                            name: data.accountId,       // use full accountId as name
+                            accountId: data.accountId,  // full id for graph linking
                             amount: data.amount,
                             timestamp: new Date().toISOString(),
                             status
