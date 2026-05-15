@@ -4,6 +4,7 @@ import Auth from "./pages/auth/Auth";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Graph from "./pages/Graph";
 import Verdict from "./pages/verdict/Verdict";
+import FlaggedAccounts from "./pages/flagged/FlaggedAccounts";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppShell from "./components/AppShell";
 
@@ -52,6 +53,18 @@ function App() {
           <ProtectedRoute>
             <AppShell>
               <Verdict />
+            </AppShell>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected: Flagged Accounts */}
+      <Route
+        path="/flagged-accounts"
+        element={
+          <ProtectedRoute>
+            <AppShell>
+              <FlaggedAccounts />
             </AppShell>
           </ProtectedRoute>
         }

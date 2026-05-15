@@ -1,5 +1,6 @@
 import { useAppSelector } from "../store/hooks";
 import StatusDot from "./StatusDot";
+import VerdictModal from "./VerdictModal";
 import type { ReactNode } from "react";
 import { NavLink } from "react-router";
 import { LayoutDashboard, Network, ShieldAlert } from "lucide-react";
@@ -82,6 +83,9 @@ const AppShell = ({ children }: AppShellProps) => {
                     {children}
                 </main>
             </div>
+
+            {/* Global Verdict Modal — rendered above everything, available on every route */}
+            <VerdictModal />
         </div>
     );
 };
