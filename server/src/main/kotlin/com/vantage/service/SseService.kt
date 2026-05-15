@@ -25,6 +25,22 @@ class SseService {
         _events.emit(SseEvent(event, data))
     }
 
+    fun emitAlert(severity: String, title: String, description: String, accountId: String? = null) {
+        val data = buildJsonObject {
+            put("id", java.util.UUID.randomUUID().toString())
+            put("severity", severity)
+            put("title", title)
+            put("description", description)
+            put("timestamp", "Just now")
+            put("accountId", accountId ?: "")
+        }.toString()
+        
+        // Use GlobalScope or pass a scope to emitAlert if we want to be suspended
+        kotlinx.coroutines.GlobalScope.launch {
+            emit("alert", data)
+        }
+    }
+
     fun start(scope: CoroutineScope, memgraph: MemgraphClient) {
         scope.launch {
             println("[SSE] Starting background event emitter...")

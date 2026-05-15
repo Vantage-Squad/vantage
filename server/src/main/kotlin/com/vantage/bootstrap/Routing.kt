@@ -24,6 +24,7 @@ fun Application.configureRouting() {
             post("/admin/login") {
                 handleLogin(call)
             }
+            configureAdminRoutes()
             configureApiRoutes()
         }
         post("/squad/webhook") {
@@ -55,10 +56,10 @@ fun Application.configureRouting() {
             
             AppContext.sseService.emit("transaction", eventData)
             
-            if (ts.tier == Tier.RED) {
+            if (ts.tier == Tier.CRITICAL) {
                 val alertData = buildJsonObject {
                     put("accountId", accountId)
-                    put("tier", "RED")
+                    put("tier", "CRITICAL")
                     put("ts", ts.ts)
                     putJsonArray("riskFactors") {
                         add("Trust score below 0.4 threshold")

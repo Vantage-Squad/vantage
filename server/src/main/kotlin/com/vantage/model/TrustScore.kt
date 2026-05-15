@@ -3,7 +3,7 @@ package com.vantage.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class Tier { GREEN, AMBER, RED }
+enum class Tier { SAFE, HIGH_RISK, CRITICAL }
 
 @Serializable
 data class TrustScore(

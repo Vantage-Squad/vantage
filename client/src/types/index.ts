@@ -1,4 +1,4 @@
-export type TransactionStatus = 'CRITICAL' | 'WARNING' | 'SAFE';
+export type TransactionStatus = 'CRITICAL' | 'HIGH_RISK' | 'SAFE';
 export type AlertSeverity = 'critical' | 'warning' | 'info';
 export type StreamStatus = 'connecting' | 'live' | 'reconnecting' | 'offline';
 

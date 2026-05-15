@@ -30,7 +30,7 @@ function generateMockTransaction(): Transaction {
     const rand = Math.random();
     let status: Transaction["status"] = "SAFE";
     if (rand > 0.85) status = "CRITICAL";
-    else if (rand > 0.60) status = "WARNING";
+    else if (rand > 0.60) status = "HIGH_RISK";
 
     const name = ["J.", "B.", "T.", "A.", "M.", "O.", "C."][Math.floor(Math.random() * 7)] + " " + NAMES[Math.floor(Math.random() * NAMES.length)];
     const id1 = Math.floor(1000 + Math.random() * 9000);
@@ -81,9 +81,8 @@ export const sseService: SSEService = {
                     try {
                         const data = JSON.parse(e.data);
                         // Ktor sends: accountId, amount, tier
-                        let status: Transaction["status"] = "SAFE";
-                        if (data.tier === "RED") status = "CRITICAL";
-                        else if (data.tier === "AMBER") status = "WARNING";
+                        let status: Transaction["status"] = data.tier as Transaction["status"];
+                        if (!status) status = "SAFE";
 
                         onTransaction({
                             id: crypto.randomUUID(),

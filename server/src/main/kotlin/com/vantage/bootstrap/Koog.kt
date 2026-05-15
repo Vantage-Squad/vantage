@@ -14,7 +14,7 @@ fun Application.configureKoog() {
             // Primary: Groq (OpenAI-compatible, 14,400 RPD free tier)
             if (config.llmGroqApiKey.isNotBlank()) {
                 openAI(apiKey = config.llmGroqApiKey) {
-                    baseUrl = "https://api.groq.com/openai/v1"
+                    baseUrl = config.llmGroqBaseUrl
                 }
                 println("[Koog] Groq configured as primary LLM via OpenAI-compatible client (model: ${config.llmGroqModel})")
             }

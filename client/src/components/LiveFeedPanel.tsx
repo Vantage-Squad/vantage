@@ -11,7 +11,7 @@ const LiveFeedPanel = () => {
 
     const filteredTransactions = transactions.filter((t) => {
         if (filter === "highRisk") {
-            return t.status === "CRITICAL" || t.status === "WARNING";
+            return t.status === "CRITICAL" || t.status === "HIGH_RISK";
         }
         return true;
     });

@@ -24,44 +24,25 @@ data class LoginRequest(val email: String, val password: String)
 data class LoginResponse(val token: String, val expiresIn: Long)
 
 @Serializable
-data class JwtPayload(val sub: String, val email: String, val iat: Long, val exp: Long)
+data class JwtPayload(val sub: String, val email: String, val role: String, val iat: Long, val exp: Long)
 
 suspend fun handleLogin(call: ApplicationCall) {
     val config = AppContext.config
-    val memgraph = AppContext.memgraph
     val body = call.receive<LoginRequest>()
+    val user = com.vantage.db.UserRepository.findByEmail(body.email)
 
-    val result = memgraph.readSingle(Queries.findAdminByEmail(), mapOf("email" to body.email))
-    if (result == null) {
+    if (user == null || !SecurityUtils.verifyPassword(body.password, user.passwordHash)) {
         call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid credentials"))
         return
     }
 
-    val nodeObj = result["u"]
-    val node = if (nodeObj is org.neo4j.driver.types.Node) nodeObj.asMap() else nodeObj as? Map<*, *>
-    if (node == null) {
-        call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid credentials"))
-        return
-    }
-
-    val storedHash = node["passwordHash"] as? String
-    if (storedHash == null) {
-        call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid credentials"))
-        return
-    }
-
-    val hash = sha256(body.password)
-    if (hash != storedHash) {
-        call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid credentials"))
-        return
-    }
-
-    val userId = node["id"] as? String ?: body.email
-    memgraph.execute(Queries.updateAdminLogin(), mapOf("id" to userId))
+    val userId = user.id
+    // Update last login in Postgres if needed, or keep in Memgraph for network analysis
+    // For now, let's stick to Postgres for user state
 
     val now = Instant.now().epochSecond
     val exp = now + 86400
-    val payload = JwtPayload(sub = userId, email = body.email, iat = now, exp = exp)
+    val payload = JwtPayload(sub = userId, email = body.email, role = user.role, iat = now, exp = exp)
     val token = createJwt(payload, config.jwtSecret)
 
     call.respond(LoginResponse(token = token, expiresIn = 86400))

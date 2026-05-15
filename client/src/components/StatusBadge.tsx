@@ -16,7 +16,7 @@ const StatusBadge = ({ status, label }: StatusBadgeProps) => {
             border = "var(--color-status-danger-border)";
             text = "var(--color-status-danger)";
             break;
-        case "WARNING":
+        case "HIGH_RISK":
             bg = "var(--color-status-warning-subtle)";
             border = "var(--color-status-warning-border)";
             text = "var(--color-status-warning)";
@@ -28,6 +28,8 @@ const StatusBadge = ({ status, label }: StatusBadgeProps) => {
             text = "var(--color-status-safe)";
             break;
     }
+
+    const displayText = label || (status === "HIGH_RISK" ? "HIGH-RISK" : status);
 
     return (
         <span
@@ -43,7 +45,7 @@ const StatusBadge = ({ status, label }: StatusBadgeProps) => {
                 padding: "4px 10px",
             }}
         >
-            {label || status}
+            {displayText}
         </span>
     );
 };

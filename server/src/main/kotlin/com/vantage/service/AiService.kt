@@ -21,23 +21,24 @@ class AiService {
     private val selectedModel: LLModel = if (config.llmGroqApiKey.isNotBlank()) {
         LLModel(LLMProvider.OpenAI, config.llmGroqModel, emptyList(), null, null)
     } else {
-        LLModel(LLMProvider.Ollama, "llama3.1:8b", emptyList(), null, null)
+        LLModel(LLMProvider.Ollama, config.llmOllamaModel, emptyList(), null, null)
     }
     
     // Build an agent using the shared executor and the best available model
     private val agent = AIAgent.builder()
         .promptExecutor(koog.promptExecutor)
         .llmModel(selectedModel)
-        .systemPrompt("You are Vantage, a professional fraud detection assistant for fintech security operations. Provide clear, concise, and technical risk summaries.")
+        .systemPrompt(config.llmSystemPrompt)
         .build()
 
     init {
-        val providerName = if (config.llmGroqApiKey.isNotBlank()) "Groq (${config.llmGroqModel})" else "Ollama (llama3.1:8b)"
+        val providerName = if (config.llmGroqApiKey.isNotBlank()) "Groq (${config.llmGroqModel})" else "Ollama (${config.llmOllamaModel})"
         println("[AiService] Using LLM provider: $providerName")
     }
 
     suspend fun explain(ts: TrustScore): VerdictExplanation {
-        val promptText = buildPrompt(ts)
+        val falsePositives = com.vantage.db.TransactionRepository.getFalsePositiveCount(ts.accountId)
+        val promptText = buildPrompt(ts, falsePositives)
         
         return try {
             // Use the agent to run the prompt
@@ -58,31 +59,35 @@ class AiService {
         if (ts.pdist > 0.3) riskFactors.add("Close proximity to blacklisted counterparty")
 
         val verdict = when (ts.tier) {
-            Tier.GREEN -> "PASS"
-            Tier.AMBER -> "FLAG"
-            Tier.RED -> "BLOCK"
+            Tier.SAFE -> "PASS"
+            Tier.HIGH_RISK -> "FLAG"
+            Tier.CRITICAL -> "BLOCK"
         }
         val action = when (ts.tier) {
-            Tier.GREEN -> "Allow transaction"
-            Tier.AMBER -> "Flag for manual review"
-            Tier.RED -> "Block transaction and trigger alert"
+            Tier.SAFE -> "Allow transaction"
+            Tier.HIGH_RISK -> "Flag for manual review"
+            Tier.CRITICAL -> "Block transaction and trigger alert"
         }
         val summary = "Trust score ${ts.ts} (${ts.tier}). Risk factors: ${if (riskFactors.isEmpty()) "none detected" else riskFactors.joinToString("; ")}."
 
         return VerdictExplanation(verdict, summary, riskFactors, action)
     }
 
-    private fun buildPrompt(ts: TrustScore): String = """
+    private fun buildPrompt(ts: TrustScore, falsePositives: Int): String = """
         System: Vantage Security Engine
         Action: Generate Risk Profile
         
-        Metrics:
+        Account Context:
+        - Historical False Positives: $falsePositives
+        
+        Current Metrics:
         - Trust Score: ${ts.ts} (Tier: ${ts.tier})
         - PageRank Centrality: ${ts.cpr}
         - Transaction Velocity: ${ts.vvel}
         - Blacklist Proximity: ${ts.pdist}
         
         Requirement: Provide a professional risk verdict (PASS, FLAG, or BLOCK), a concise technical summary of factors, and mitigation recommendations.
+        Note: If the account has historical false positives, take that into consideration when evaluating current risk factors.
     """.trimIndent()
 
     private fun parseExplanation(text: String): VerdictExplanation {

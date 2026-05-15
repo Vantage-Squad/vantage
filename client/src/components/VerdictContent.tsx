@@ -242,7 +242,7 @@ function KillSwitchButton({
 
 function getRiskVariant(risk: string): TransactionStatus {
   if (risk.includes('CRITICAL')) return 'CRITICAL';
-  if (risk.includes('HIGH')) return 'WARNING';
+  if (risk.includes('HIGH')) return 'HIGH_RISK';
   return 'SAFE';
 }
 
