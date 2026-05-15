@@ -41,7 +41,7 @@ object PostgresDatabase {
                 }
             }
 
-            jdbcUrl = rawUrl
+            jdbcUrl = if (rawUrl.contains("?")) "$rawUrl&ssl=true&sslmode=require" else "$rawUrl?ssl=true&sslmode=require"
             username = finalUser
             password = finalPass
             driverClassName = "org.postgresql.Driver"
@@ -51,6 +51,7 @@ object PostgresDatabase {
             validate()
         }
         
+        println("[Postgres] Attempting connection to: ${hikariConfig.jdbcUrl.split("?")[0]}")
         dataSource = HikariDataSource(hikariConfig)
         Database.connect(dataSource!!)
 
