@@ -51,7 +51,7 @@ export default function Graph() {
     const latest = transactions[0];
     let newStatus: NodeStatus = 'clean';
     if (latest.status === 'CRITICAL') newStatus = 'flagged';
-    else if (latest.status === 'WARNING') newStatus = 'watch';
+    else if (latest.status === 'HIGH_RISK') newStatus = 'watch';
 
     const existingNode = graphData.nodes.find(n => n.accountId === latest.accountId || n.id === latest.accountId);
     if (!existingNode || existingNode.status === newStatus) return;
