@@ -24,7 +24,7 @@ data class LoginRequest(val email: String, val password: String)
 data class LoginResponse(val token: String, val expiresIn: Long)
 
 @Serializable
-data class JwtPayload(val sub: String, val email: String, val iat: Long, val exp: Long)
+data class JwtPayload(val sub: String, val email: String, val role: String, val iat: Long, val exp: Long)
 
 suspend fun handleLogin(call: ApplicationCall) {
     val config = AppContext.config
@@ -42,7 +42,7 @@ suspend fun handleLogin(call: ApplicationCall) {
 
     val now = Instant.now().epochSecond
     val exp = now + 86400
-    val payload = JwtPayload(sub = userId, email = body.email, iat = now, exp = exp)
+    val payload = JwtPayload(sub = userId, email = body.email, role = user.role, iat = now, exp = exp)
     val token = createJwt(payload, config.jwtSecret)
 
     call.respond(LoginResponse(token = token, expiresIn = 86400))

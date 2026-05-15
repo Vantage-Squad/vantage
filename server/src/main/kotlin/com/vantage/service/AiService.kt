@@ -37,7 +37,8 @@ class AiService {
     }
 
     suspend fun explain(ts: TrustScore): VerdictExplanation {
-        val promptText = buildPrompt(ts)
+        val falsePositives = com.vantage.db.TransactionRepository.getFalsePositiveCount(ts.accountId)
+        val promptText = buildPrompt(ts, falsePositives)
         
         return try {
             // Use the agent to run the prompt
@@ -72,17 +73,21 @@ class AiService {
         return VerdictExplanation(verdict, summary, riskFactors, action)
     }
 
-    private fun buildPrompt(ts: TrustScore): String = """
+    private fun buildPrompt(ts: TrustScore, falsePositives: Int): String = """
         System: Vantage Security Engine
         Action: Generate Risk Profile
         
-        Metrics:
+        Account Context:
+        - Historical False Positives: $falsePositives
+        
+        Current Metrics:
         - Trust Score: ${ts.ts} (Tier: ${ts.tier})
         - PageRank Centrality: ${ts.cpr}
         - Transaction Velocity: ${ts.vvel}
         - Blacklist Proximity: ${ts.pdist}
         
         Requirement: Provide a professional risk verdict (PASS, FLAG, or BLOCK), a concise technical summary of factors, and mitigation recommendations.
+        Note: If the account has historical false positives, take that into consideration when evaluating current risk factors.
     """.trimIndent()
 
     private fun parseExplanation(text: String): VerdictExplanation {

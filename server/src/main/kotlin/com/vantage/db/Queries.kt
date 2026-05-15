@@ -104,10 +104,12 @@ object Queries {
     """.trimIndent()
 
     fun graphNetwork() = """
-        MATCH (a:Account)-[t:TRANSACTED_WITH]->(c:Counterparty)
+        MATCH (a:Account)
         WHERE ${"$"}accountId IS NULL OR a.id = ${"$"}accountId
-        RETURN a, t, c
+        WITH a
         LIMIT ${"$"}limit
+        MATCH (a)-[t:TRANSACTED_WITH]-(n)
+        RETURN a, t, n
     """.trimIndent()
     fun globalRecentTransactions() = """
         MATCH (a:Account)-[t:TRANSACTED_WITH]->(c:Counterparty)

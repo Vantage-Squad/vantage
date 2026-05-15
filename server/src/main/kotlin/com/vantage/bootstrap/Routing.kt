@@ -24,6 +24,7 @@ fun Application.configureRouting() {
             post("/admin/login") {
                 handleLogin(call)
             }
+            configureAdminRoutes()
             configureApiRoutes()
         }
         post("/squad/webhook") {

@@ -3,6 +3,8 @@ package com.vantage.db
 import com.vantage.model.TrustScore
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.util.UUID
 import kotlinx.serialization.json.Json
@@ -41,5 +43,11 @@ object TransactionRepository {
                 it[this.lastSeen] = OffsetDateTime.now().toInstant()
             }
         }
+    }
+
+    suspend fun getFalsePositiveCount(accountId: String): Int = PostgresDatabase.dbQuery {
+        TransactionHistoryTable.select { 
+            (TransactionHistoryTable.accountId eq accountId) and (TransactionHistoryTable.isFalsePositive eq true) 
+        }.count().toInt()
     }
 }
