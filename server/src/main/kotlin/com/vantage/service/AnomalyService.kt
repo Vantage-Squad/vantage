@@ -3,8 +3,9 @@ package com.vantage.service
 import com.vantage.AppContext
 import com.vantage.db.PostgresDatabase
 import com.vantage.db.TransactionHistoryTable
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.and
 import java.math.BigDecimal
 import kotlin.math.sqrt
 
@@ -14,7 +15,7 @@ object AnomalyService {
 
     suspend fun isAmountAnomaly(accountId: String, amount: Double): AnomalyResult = PostgresDatabase.dbQuery {
         // Fetch last 50 transactions for this account from Postgres history
-        val history = TransactionHistoryTable.select { TransactionHistoryTable.accountId eq accountId }
+        val history = TransactionHistoryTable.selectAll().where { TransactionHistoryTable.accountId eq accountId }
             .orderBy(TransactionHistoryTable.createdAt to SortOrder.DESC)
             .limit(50)
             .map { it[TransactionHistoryTable.amount].toDouble() }

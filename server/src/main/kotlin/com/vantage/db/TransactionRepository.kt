@@ -3,7 +3,7 @@ package com.vantage.db
 import com.vantage.model.TrustScore
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.update
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.util.UUID
@@ -46,7 +46,7 @@ object TransactionRepository {
     }
 
     suspend fun getFalsePositiveCount(accountId: String): Int = PostgresDatabase.dbQuery {
-        TransactionHistoryTable.select { 
+        TransactionHistoryTable.selectAll().where { 
             (TransactionHistoryTable.accountId eq accountId) and (TransactionHistoryTable.isFalsePositive eq true) 
         }.count().toInt()
     }

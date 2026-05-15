@@ -5,6 +5,9 @@ import com.vantage.db.Queries
 import com.vantage.model.Tier
 import com.vantage.model.TrustScore
 import com.vantage.model.TrustScoreComponents
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 
 class TrustService {
     private val memgraph = AppContext.memgraph
