@@ -1,4 +1,5 @@
-import type { Transaction, Alert, StreamStatus } from "../types";
+import type { Transaction, Alert } from "../types";
+
 import { getToken } from "../services/auth";
 import { store } from "../store/store";
 // We will create this slice next

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { selectNode, updateGraphData, setKillSwitchState } from '../store/graphSlice';
+import { selectNode, updateGraphData } from '../store/graphSlice';
+
 import { Shield, RefreshCw } from 'lucide-react';
 import GraphToolbar from '../components/GraphToolbar';
 import GraphCanvas, { type GraphCanvasHandle } from '../components/GraphCanvas';

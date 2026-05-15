@@ -148,6 +148,11 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
             'opacity': 0.6,
           },
         },
+        // ── Filtered out (hidden by status filter toggles) ──
+        {
+          selector: '.filtered-out',
+          style: { 'display': 'none' },
+        },
       ],
       layout: { name: 'preset' },
       userZoomingEnabled: true,
@@ -238,20 +243,24 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
     });
   }, [graphData]);
 
-  // Sync filters
+  // Sync filters — toggle .filtered-out class (fully typed, no show/hide needed)
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
+    const ALL_STATUSES: NodeStatus[] = ['flagged', 'watch', 'clean'];
     cy.batch(() => {
-      cy.nodes().forEach(node => {
-        if (filterStatuses.includes(node.data('status'))) {
-          node.show();
+      ALL_STATUSES.forEach(status => {
+        const nodes = cy.nodes(`[status="${status}"]`);
+        if (filterStatuses.includes(status)) {
+          nodes.removeClass('filtered-out');
         } else {
-          node.hide();
+          nodes.addClass('filtered-out');
         }
       });
     });
   }, [filterStatuses]);
+
+
 
   // Sync selection
   useEffect(() => {
