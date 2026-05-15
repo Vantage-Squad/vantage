@@ -7,9 +7,9 @@ export const mockVerdicts: Record<string, Verdict> = {
     trustScore: 0.12,
     riskLevel: "CRITICAL RISK",
     indicators: [
-      { label: "Network Velocity", score: -0.42 },
-      { label: "Origin Conflict", score: -0.31 },
-      { label: "Account Age Affinity", score: +0.09 },
+      { label: "Cpr (Compliance Probability)", score: -0.88 },
+      { label: "Aagt (Agent Aggression)", score: -0.26 },
+      { label: "Pdist (Pattern Distortion)", score: -0.11 },
     ],
     agentSummary: "Analysis of entity 992-XFA indicates high-frequency layered structural patterns typically seen in Smurfing operations.\n\nDetected 14 rapid hops across 3 jurisdictions in 480ms. Connection to known-bad node \"Ghost_Node_91\" confirmed via shared IP residue.\n\n// Recommendation: Immediate containment and forensic extraction of related sub-ledger.",
     accountMeta: {
@@ -19,7 +19,9 @@ export const mockVerdicts: Record<string, Verdict> = {
       "Opened": "2021-03-14",
       "Last Active": "Just now",
       "Linked Devices": "3",
-    }
+    },
+    nodeOrigin: "FRA-LHR-02",
+    riskVector: "Sybil Cluster A",
   },
   "8842-X": {
     nodeId: "8842-X",
@@ -39,7 +41,9 @@ export const mockVerdicts: Record<string, Verdict> = {
       "Opened": "2022-07-01",
       "Last Active": "2m ago",
       "Linked Devices": "7",
-    }
+    },
+    nodeOrigin: "LOS-ABJ-07",
+    riskVector: "Ghost Liquidity",
   },
   "412-Z": {
     nodeId: "412-Z",
@@ -59,7 +63,9 @@ export const mockVerdicts: Record<string, Verdict> = {
       "Opened": "2020-11-22",
       "Last Active": "15m ago",
       "Linked Devices": "2",
-    }
+    },
+    nodeOrigin: "PHC-LOS-03",
+    riskVector: "Velocity Ring B",
   },
   "771-M": {
     nodeId: "771-M",
@@ -79,6 +85,8 @@ export const mockVerdicts: Record<string, Verdict> = {
       "Opened": "2019-05-10",
       "Last Active": "30m ago",
       "Linked Devices": "1",
-    }
+    },
+    nodeOrigin: "ACC-LOS-01",
+    riskVector: "None",
   }
 };

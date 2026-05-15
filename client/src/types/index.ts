@@ -69,4 +69,12 @@ export interface Verdict {
   indicators: RiskIndicator[];
   agentSummary: string;    // full text for typewriter animation
   accountMeta: Record<string, string>; // two-column label/value pairs
+  nodeOrigin: string;      // e.g. "FRA-LHR-02"
+  riskVector: string;      // e.g. "Sybil Cluster A"
 }
+
+export interface VerdictPageState {
+  verdict: Verdict | null;
+  status: VerdictStatus;
+}
+

@@ -59,13 +59,27 @@ export function rehydrateAuth(): void {
 }
 
 
-// Decode user identity from the JWT payload (sub + email)
+// Decode user identity from the JWT payload (sub + email + optional name)
 function decodeJwtUser(token: string): AuthUser | null {
     try {
         const raw = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
         const payload = JSON.parse(atob(raw));
         if (!payload.sub || !payload.email) return null;
-        return { id: payload.sub, email: payload.email };
+
+        // Try common JWT name claims, fall back to email prefix
+        const rawName: string =
+            payload.name ||
+            payload.username ||
+            payload.preferred_username ||
+            payload.email.split("@")[0];
+
+        // Capitalise each word so "john_doe" → "John Doe"
+        const name = rawName
+            .replace(/[._-]/g, " ")
+            .replace(/\b\w/g, (c: string) => c.toUpperCase())
+            .trim();
+
+        return { id: payload.sub, email: payload.email, name };
     } catch {
         return null;
     }

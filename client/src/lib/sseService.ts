@@ -14,7 +14,14 @@ interface SSEService {
 let mockInterval: ReturnType<typeof setInterval> | null = null;
 let eventSource: EventSource | null = null;
 let reconnectAttempts = 0;
-const MAX_RECONNECT = 3;
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+// No hard limit — use exponential backoff, capped at 30s
+const MAX_BACKOFF_MS = 30_000;
+
+function getBackoffMs(attempt: number): number {
+    return Math.min(1000 * Math.pow(2, attempt), MAX_BACKOFF_MS);
+}
+
 
 const NAMES = ["Adeyemi", "Okonkwo", "Ibrahim", "Mensah", "Diallo", "Eze", "Osei"];
 
@@ -79,8 +86,8 @@ export const sseService: SSEService = {
 
                         onTransaction({
                             id: crypto.randomUUID(),
-                            name: "User " + data.accountId.substring(0, 5),
-                            accountId: data.accountId,
+                            name: data.accountId,       // use full accountId as name
+                            accountId: data.accountId,  // full id for graph linking
                             amount: data.amount,
                             timestamp: new Date().toISOString(),
                             status
@@ -112,13 +119,11 @@ export const sseService: SSEService = {
 
                 eventSource.onerror = () => {
                     eventSource?.close();
-                    if (reconnectAttempts < MAX_RECONNECT) {
-                        reconnectAttempts++;
-                        store.dispatch(setStreamStatus("reconnecting"));
-                        setTimeout(connect, 3000);
-                    } else {
-                        store.dispatch(setStreamStatus("offline"));
-                    }
+                    eventSource = null;
+                    store.dispatch(setStreamStatus("reconnecting"));
+                    const delay = getBackoffMs(reconnectAttempts);
+                    reconnectAttempts++;
+                    reconnectTimer = setTimeout(connect, delay);
                 };
             };
 
@@ -130,10 +135,15 @@ export const sseService: SSEService = {
             clearInterval(mockInterval);
             mockInterval = null;
         }
+        if (reconnectTimer) {
+            clearTimeout(reconnectTimer);
+            reconnectTimer = null;
+        }
         if (eventSource) {
             eventSource.close();
             eventSource = null;
         }
+        reconnectAttempts = 0;
         store.dispatch(setStreamStatus("offline"));
     }
 };

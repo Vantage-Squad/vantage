@@ -213,3 +213,38 @@
 body {
   background-color: var(--color-bg-canvas);
 }
+
+/* ============================================================
+   CUSTOM SCROLLBARS — dark-themed, consistent with UI palette
+   Webkit (Chrome, Edge, Safari) + Firefox
+   ============================================================ */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-bg-raised) transparent;
+}
+
+/* Chromium / Safari / Edge */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-raised);
+  border-radius: 999px;
+  transition: background 200ms ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-emphasis);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
