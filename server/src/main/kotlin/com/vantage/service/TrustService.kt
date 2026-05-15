@@ -22,7 +22,7 @@ class TrustService {
             else -> Tier.CRITICAL
         }
         memgraph.execute(Queries.updateTrustScore(), mapOf("id" to accountId, "ts" to clamped))
-        return TrustScore(
+        val score = TrustScore(
             accountId = accountId,
             ts = clamped,
             tier = tier,
@@ -30,6 +30,17 @@ class TrustService {
             vvel = vvel,
             pdist = pdist
         )
+
+        // Persist history asynchronously
+        kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                com.vantage.db.TransactionRepository.saveHistory(score, null, null)
+            } catch (e: Exception) {
+                println("[TrustService] Failed to save history: ${e.message}")
+            }
+        }
+
+        return score
     }
 
     private suspend fun computePageRank(accountId: String): Double {

@@ -57,6 +57,18 @@ dependencies {
     // Logging
     implementation(libs.logback.classic)
 
+    // Persistence (PostgreSQL + Exposed)
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.dao)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.postgres)
+    implementation(libs.hikari)
+    implementation(libs.flyway)
+    implementation(libs.flyway.postgres)
+
+    // Security
+    implementation(libs.password4j)
+
     // Test
     testImplementation(kotlin("test"))
     testImplementation(libs.mockk)

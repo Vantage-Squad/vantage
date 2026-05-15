@@ -9,10 +9,11 @@ import kotlinx.serialization.json.Json
 class GeoIpService {
     private val client = HttpClient()
     private val json = Json { ignoreUnknownKeys = true }
+    private val config = com.vantage.AppContext.config
 
     suspend fun lookup(ip: String): GeoLocation? {
         return try {
-            val response: HttpResponse = client.get("http://ip-api.com/json/$ip?fields=city,country,status")
+            val response: HttpResponse = client.get("${config.geoIpApiUrl}$ip?fields=city,country,status")
             if (response.status.value == 200) {
                 val result = json.decodeFromString<IpApiResponse>(response.bodyAsText())
                 if (result.status == "success") GeoLocation(result.city, result.country)

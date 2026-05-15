@@ -21,18 +21,18 @@ class AiService {
     private val selectedModel: LLModel = if (config.llmGroqApiKey.isNotBlank()) {
         LLModel(LLMProvider.OpenAI, config.llmGroqModel, emptyList(), null, null)
     } else {
-        LLModel(LLMProvider.Ollama, "llama3.1:8b", emptyList(), null, null)
+        LLModel(LLMProvider.Ollama, config.llmOllamaModel, emptyList(), null, null)
     }
     
     // Build an agent using the shared executor and the best available model
     private val agent = AIAgent.builder()
         .promptExecutor(koog.promptExecutor)
         .llmModel(selectedModel)
-        .systemPrompt("You are Vantage, a professional fraud detection assistant for fintech security operations. Provide clear, concise, and technical risk summaries.")
+        .systemPrompt(config.llmSystemPrompt)
         .build()
 
     init {
-        val providerName = if (config.llmGroqApiKey.isNotBlank()) "Groq (${config.llmGroqModel})" else "Ollama (llama3.1:8b)"
+        val providerName = if (config.llmGroqApiKey.isNotBlank()) "Groq (${config.llmGroqModel})" else "Ollama (${config.llmOllamaModel})"
         println("[AiService] Using LLM provider: $providerName")
     }
 

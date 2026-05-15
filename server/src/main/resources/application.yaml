@@ -1,6 +1,6 @@
 ktor:
   deployment:
-    port: ${PORT:-8081}
+    port: 8081
   application:
     modules:
       - com.vantage.bootstrap.StartupKt.configureStartup
