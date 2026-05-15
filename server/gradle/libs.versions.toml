@@ -6,6 +6,7 @@ kotlinx-coroutines = "1.10.2"
 neo4j-driver = "5.25.0"
 koog = "0.7.1"
 dotenv = "6.4.1"
+mockk = "1.13.13"
 
 [libraries]
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
@@ -15,6 +16,7 @@ neo4j-driver = { module = "org.neo4j.driver:neo4j-java-driver", version.ref = "n
 koog-agents = { module = "ai.koog:koog-agents", version.ref = "koog" }
 koog-ktor = { module = "ai.koog:koog-ktor", version.ref = "koog" }
 dotenv-kotlin = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "dotenv" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

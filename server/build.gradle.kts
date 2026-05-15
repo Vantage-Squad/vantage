@@ -59,5 +59,6 @@ dependencies {
 
     // Test
     testImplementation(kotlin("test"))
+    testImplementation(libs.mockk)
     testImplementation(ktorLibs.server.testHost)
 }

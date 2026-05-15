@@ -22,8 +22,8 @@ class AppConfig(config: ApplicationConfig) {
     val trustScoreAlpha: Double = 0.35
     val trustScoreBeta: Double = 0.40
     val trustScoreGamma: Double = 0.25
-    val trustScoreGreenThreshold: Double = 0.7
-    val trustScoreAmberThreshold: Double = 0.4
+    val trustScoreSafeThreshold: Double = 0.7
+    val trustScoreHighRiskThreshold: Double = 0.4
 
     val llmProvider: String = env("LLM_PROVIDER") ?: "template"
     val llmOllamaModel: String = env("OLLAMA_MODEL") ?: "llama3.1:8b"

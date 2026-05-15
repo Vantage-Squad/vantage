@@ -2,9 +2,10 @@ import type { TransactionStatus } from "../types";
 
 interface StatusBadgeProps {
     status: TransactionStatus;
+    label?: string;
 }
 
-const StatusBadge = ({ status }: StatusBadgeProps) => {
+const StatusBadge = ({ status, label }: StatusBadgeProps) => {
     let bg = "";
     let border = "";
     let text = "";
@@ -15,7 +16,7 @@ const StatusBadge = ({ status }: StatusBadgeProps) => {
             border = "var(--color-status-danger-border)";
             text = "var(--color-status-danger)";
             break;
-        case "WARNING":
+        case "HIGH_RISK":
             bg = "var(--color-status-warning-subtle)";
             border = "var(--color-status-warning-border)";
             text = "var(--color-status-warning)";
@@ -27,6 +28,8 @@ const StatusBadge = ({ status }: StatusBadgeProps) => {
             text = "var(--color-status-safe)";
             break;
     }
+
+    const displayText = label || (status === "HIGH_RISK" ? "HIGH-RISK" : status);
 
     return (
         <span
@@ -42,7 +45,7 @@ const StatusBadge = ({ status }: StatusBadgeProps) => {
                 padding: "4px 10px",
             }}
         >
-            {status}
+            {displayText}
         </span>
     );
 };

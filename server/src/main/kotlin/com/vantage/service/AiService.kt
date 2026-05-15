@@ -58,14 +58,14 @@ class AiService {
         if (ts.pdist > 0.3) riskFactors.add("Close proximity to blacklisted counterparty")
 
         val verdict = when (ts.tier) {
-            Tier.GREEN -> "PASS"
-            Tier.AMBER -> "FLAG"
-            Tier.RED -> "BLOCK"
+            Tier.SAFE -> "PASS"
+            Tier.HIGH_RISK -> "FLAG"
+            Tier.CRITICAL -> "BLOCK"
         }
         val action = when (ts.tier) {
-            Tier.GREEN -> "Allow transaction"
-            Tier.AMBER -> "Flag for manual review"
-            Tier.RED -> "Block transaction and trigger alert"
+            Tier.SAFE -> "Allow transaction"
+            Tier.HIGH_RISK -> "Flag for manual review"
+            Tier.CRITICAL -> "Block transaction and trigger alert"
         }
         val summary = "Trust score ${ts.ts} (${ts.tier}). Risk factors: ${if (riskFactors.isEmpty()) "none detected" else riskFactors.joinToString("; ")}."
 

@@ -98,7 +98,7 @@
   --color-status-safe-border: rgba(34, 197, 94, 0.25);
 
   /* ============================================
-     STATUS — DANGER (red)
+     STATUS — CRITICAL (red)
   ============================================ */
   --color-status-danger: #EF4444;
   --color-status-danger-subtle: rgba(239, 68, 68, 0.12);
@@ -109,7 +109,7 @@
   --color-on-error-container: #ffdad6;
 
   /* ============================================
-     STATUS — WARNING (amber)
+     STATUS — HIGH-RISK (amber)
   ============================================ */
   --color-status-warning: #F59E0B;
   --color-status-warning-subtle: rgba(245, 158, 11, 0.12);
@@ -213,38 +213,3 @@
 body {
   background-color: var(--color-bg-canvas);
 }
-
-/* ============================================================
-   CUSTOM SCROLLBARS — dark-themed, consistent with UI palette
-   Webkit (Chrome, Edge, Safari) + Firefox
-   ============================================================ */
-
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-bg-raised) transparent;
-}
-
-/* Chromium / Safari / Edge */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-bg-raised);
-  border-radius: 999px;
-  transition: background 200ms ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-emphasis);
-}
-
-::-webkit-scrollbar-corner {
-  background: transparent;
-}

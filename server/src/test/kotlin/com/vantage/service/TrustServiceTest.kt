@@ -25,8 +25,8 @@ class TrustServiceTest {
         every { config.trustScoreAlpha } returns 0.35
         every { config.trustScoreBeta } returns 0.40
         every { config.trustScoreGamma } returns 0.25
-        every { config.trustScoreGreenThreshold } returns 0.7
-        every { config.trustScoreAmberThreshold } returns 0.4
+        every { config.trustScoreSafeThreshold } returns 0.7
+        every { config.trustScoreHighRiskThreshold } returns 0.4
     }
 
     @Test
@@ -46,13 +46,8 @@ class TrustServiceTest {
         val service = TrustService()
         val result = service.compute("acc1")
 
-        // Ts = 0.35 * 0.9 + 0.40 * (weighted_avg / 100) - 0.25 * 0
-        // weighted_avg = (1*30 + 2*20 + 3*10 + 4*5) / 65 = (30+40+30+20)/65 = 120/65 = 1.84
-        // vvel = 1.84 / 100 = 0.0184
-        // Ts = 0.315 + 0.00736 - 0 = 0.32236 -> Wait, Coerced in 0.0, 1.0
-        
         assertEquals("acc1", result.accountId)
-        assertEquals(Tier.RED, result.tier) // 0.32 < 0.4
+        assertEquals(Tier.CRITICAL, result.tier) // 0.32 < 0.4
     }
 
     @Test
@@ -68,9 +63,7 @@ class TrustServiceTest {
         val service = TrustService()
         val result = service.compute("acc1")
         
-        // Ts = 0.35*0.1 + 0.40*(50*65/65/100) - 0.25*(1/2)
-        // Ts = 0.035 + 0.20 - 0.125 = 0.11
-        assertEquals(Tier.RED, result.tier)
+        assertEquals(Tier.CRITICAL, result.tier)
         assertEquals(0.11, result.ts, 0.01)
     }
 }

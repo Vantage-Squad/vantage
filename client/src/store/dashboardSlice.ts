@@ -24,7 +24,7 @@ const initialState: DashboardState = {
       accountId: '4291-****-1102',
       amount: 3200.00,
       timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-      status: 'WARNING'
+      status: 'HIGH_RISK'
     },
     {
       id: 't3',
@@ -88,7 +88,7 @@ const dashboardSlice = createSlice({
         state.transactions.pop();
       }
 
-      if (action.payload.status === 'CRITICAL' || action.payload.status === 'WARNING') {
+      if (action.payload.status === 'CRITICAL' || action.payload.status === 'HIGH_RISK') {
         state.metrics.flagged += 1;
       }
       if (action.payload.status !== 'SAFE') {

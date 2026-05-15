@@ -17,9 +17,9 @@ class TrustService {
         val ts = config.trustScoreAlpha * cpr + config.trustScoreBeta * vvel - config.trustScoreGamma * pdist
         val clamped = ts.coerceIn(0.0, 1.0)
         val tier = when {
-            clamped > config.trustScoreGreenThreshold -> Tier.GREEN
-            clamped >= config.trustScoreAmberThreshold -> Tier.AMBER
-            else -> Tier.RED
+            clamped > config.trustScoreSafeThreshold -> Tier.SAFE
+            clamped >= config.trustScoreHighRiskThreshold -> Tier.HIGH_RISK
+            else -> Tier.CRITICAL
         }
         memgraph.execute(Queries.updateTrustScore(), mapOf("id" to accountId, "ts" to clamped))
         return TrustScore(
