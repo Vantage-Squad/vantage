@@ -28,6 +28,7 @@ fun Application.configureStartup() {
         runBlocking {
             SchemaSetup(memgraph).run()
         }
+        AppContext.sseService.start(this, memgraph)
         println("[Vantage] Ready on port ${environment.config.property("ktor.deployment.port").getString()}")
     }
 

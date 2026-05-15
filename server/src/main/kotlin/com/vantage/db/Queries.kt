@@ -109,4 +109,11 @@ object Queries {
         RETURN a, t, c
         LIMIT ${"$"}limit
     """.trimIndent()
+    fun globalRecentTransactions() = """
+        MATCH (a:Account)-[t:TRANSACTED_WITH]->(c:Counterparty)
+        RETURN a.id AS accountId, t.amount AS amount, t.currency AS currency, 
+               t.timestamp AS timestamp, t.transactionRef AS transactionRef, 
+               c.id AS counterpartyId
+        ORDER BY t.timestamp DESC LIMIT 10
+    """.trimIndent()
 }
