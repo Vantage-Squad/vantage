@@ -315,7 +315,7 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
       {/* Tooltip */}
       {tooltip && (
         <div
-          className="absolute z-50 pointer-events-none rounded-[var(--radius-default)] px-3 py-1.5 shadow-lg"
+          className="absolute z-50 pointer-events-none rounded-default px-3 py-1.5 shadow-lg"
           style={{
             left: tooltip.x + 16,
             top: tooltip.y + 16,

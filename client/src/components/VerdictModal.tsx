@@ -129,7 +129,7 @@ export default function VerdictModal({ nodeId: externalNodeId, onClose: external
 
           <button
             onClick={handleClose}
-            className="flex items-center justify-center rounded-[var(--radius-sm)] transition-colors hover:opacity-80"
+            className="flex items-center justify-center rounded-sm transition-colors hover:opacity-80"
             style={{
               width: 28,
               height: 28,
@@ -173,7 +173,7 @@ export default function VerdictModal({ nodeId: externalNodeId, onClose: external
               </p>
               <button
                 onClick={handleRetry}
-                className="px-4 py-2 rounded-[var(--radius-default)] transition-colors hover:opacity-80"
+                className="px-4 py-2 rounded-default transition-colors hover:opacity-80"
                 style={{
                   background: 'var(--color-bg-raised)',
                   border: '1px solid var(--color-border-subtle)',

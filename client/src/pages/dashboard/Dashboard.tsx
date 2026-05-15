@@ -20,14 +20,14 @@ const Dashboard = () => {
     }, [dispatch]);
 
     return (
-        <div className="flex h-full gap-[var(--spacing-lg)]">
+        <div className="flex h-full gap-(--spacing-lg)">
             {/* Left Column */}
             <div className="w-[60%] h-full flex flex-col">
                 <LiveFeedPanel />
             </div>
 
             {/* Right Column — fixed height, only alert list scrolls */}
-            <div className="w-[40%] h-full flex flex-col gap-[var(--spacing-lg)] overflow-hidden">
+            <div className="w-[40%] h-full flex flex-col gap-(--spacing-lg) overflow-hidden">
                 
                 {/* Metrics — pinned, never scrolls */}
                 <div className="grid grid-cols-2 gap-4 shrink-0">
@@ -39,8 +39,8 @@ const Dashboard = () => {
                             deltaPositive={false}
                             accentColor="var(--color-status-danger)"
                         >
-                            <div className="w-full max-w-[120px] h-1 bg-[var(--color-bg-raised)] rounded-full overflow-hidden self-end mb-1">
-                                <div className="h-full w-[65%] bg-[var(--color-status-danger)]" />
+                            <div className="w-full max-w-30 h-1 bg-bg-raised rounded-full overflow-hidden self-end mb-1">
+                                <div className="h-full w-[65%] bg-status-danger" />
                             </div>
                         </MetricCard>
                     </div>
