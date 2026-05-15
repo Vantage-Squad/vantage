@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { X, Terminal, Settings, ShieldAlert, Loader2, CheckCircle2 } from 'lucide-react';
-import type { Verdict, VerdictStatus, KillSwitchState, RiskIndicator } from '../types';
+import { X, Terminal, Settings, ShieldAlert, Loader2 } from 'lucide-react';
+import type { Verdict, VerdictStatus, KillSwitchState, RiskIndicator, TransactionStatus } from '../types';
 import TrustScoreCircle from './TrustScoreCircle';
 import StatusBadge from './StatusBadge';
 
@@ -16,7 +16,7 @@ function TrustScoreBar({ score, colorClass, indicators }: { score: number; color
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="w-full h-1.5 bg-[var(--color-bg-raised)] rounded-[var(--radius-full)] overflow-hidden">
+      <div className="w-full h-1.5 bg-bg-raised rounded-full overflow-hidden">
         <div
           className={`h-full ${colorClass} transition-all duration-800 ease-out`}
           style={{ width: `${width}%` }}
@@ -26,19 +26,19 @@ function TrustScoreBar({ score, colorClass, indicators }: { score: number; color
         {indicators.map((ind, idx) => {
           const isNegative = ind.score < 0;
           const scoreStr = (ind.score > 0 ? '+' : '') + ind.score.toFixed(2);
-          const scoreColor = isNegative ? 'text-[var(--color-status-danger)]' : 'text-[var(--color-status-safe)]';
+          const scoreColor = isNegative ? 'text-status-danger' : 'text-status-safe';
           const maxMagnitude = 0.6;
           const magnitudePercent = Math.min((Math.abs(ind.score) / maxMagnitude) * 100, 100);
 
           return (
             <div key={idx} className="flex flex-col gap-1.5">
-              <div className="flex justify-between items-center text-[var(--font-size-caption)]">
-                <span className="text-[var(--color-text-secondary)]">{ind.label}</span>
-                <span className={`font-[var(--font-weight-medium)] ${scoreColor}`}>{scoreStr}</span>
+              <div className="flex justify-between items-center text-(length:--font-size-caption)">
+                <span className="text-text-secondary">{ind.label}</span>
+                <span className={`font-medium ${scoreColor}`}>{scoreStr}</span>
               </div>
-              <div className="w-full h-0.5 bg-[var(--color-bg-raised)] rounded-[var(--radius-full)] overflow-hidden">
+              <div className="w-full h-0.5 bg-bg-raised rounded-full overflow-hidden">
                 <div
-                  className={`h-full ${isNegative ? 'bg-[var(--color-status-danger)]' : 'bg-[var(--color-status-safe)]'}`}
+                  className={`h-full ${isNegative ? 'bg-status-danger' : 'bg-status-safe'}`}
                   style={{ width: `${magnitudePercent}%` }}
                 />
               </div>
@@ -170,7 +170,7 @@ function KillSwitchButton({
     return (
       <button
         disabled
-        className="w-full py-3 rounded-[var(--radius-default)] flex items-center justify-center cursor-not-allowed"
+        className="w-full py-3 rounded-default flex items-center justify-center cursor-not-allowed"
         style={{
           background: 'var(--color-status-safe-subtle)',
           border: '1px solid var(--color-status-safe-border)',
@@ -188,7 +188,7 @@ function KillSwitchButton({
     return (
       <button
         disabled
-        className="w-full py-3 rounded-[var(--radius-default)] flex items-center justify-center gap-2 cursor-wait"
+        className="w-full py-3 rounded-default flex items-center justify-center gap-2 cursor-wait"
         style={{
           background: 'var(--color-status-warning-subtle)',
           border: '1px solid var(--color-status-warning-border)',
@@ -207,7 +207,7 @@ function KillSwitchButton({
     return (
       <button
         onClick={handleClick}
-        className="w-full py-3 rounded-[var(--radius-default)] transition-all"
+        className="w-full py-3 rounded-default transition-all"
         style={{
           background: 'var(--color-status-warning-subtle)',
           border: '1px solid var(--color-status-warning-border)',
@@ -224,7 +224,7 @@ function KillSwitchButton({
   return (
     <button
       onClick={handleClick}
-      className="w-full py-3 rounded-[var(--radius-default)] transition-all hover:opacity-90"
+      className="w-full py-3 rounded-default transition-all hover:opacity-90"
       style={{
         background: 'var(--color-status-danger-subtle)',
         border: '1px solid var(--color-status-danger-border)',
@@ -240,10 +240,10 @@ function KillSwitchButton({
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getRiskVariant(risk: string): 'critical' | 'warning' | 'info' {
-  if (risk.includes('CRITICAL')) return 'critical';
-  if (risk.includes('HIGH')) return 'warning';
-  return 'info';
+function getRiskVariant(risk: string): TransactionStatus {
+  if (risk.includes('CRITICAL')) return 'CRITICAL';
+  if (risk.includes('HIGH')) return 'WARNING';
+  return 'SAFE';
 }
 
 function getRiskHeadline(riskLevel: Verdict['riskLevel']): string {
@@ -409,71 +409,6 @@ function FullPageLayout({
             </button>
           </div>
 
-          {/* Account metadata grid */}
-          <div className="p-6">
-            <span
-              className="uppercase tracking-wider block mb-3"
-              style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-text-muted)', fontWeight: 'var(--font-weight-medium)' }}
-            >
-              Account Metadata
-            </span>
-            <div className="grid grid-cols-2 gap-y-3 gap-x-4">
-              {Object.entries(verdict.accountMeta).map(([key, value]) => (
-                <div key={key} className="flex flex-col gap-0.5">
-                  <span style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-text-muted)' }}>{key}</span>
-                  <span style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-text-primary)' }}>{value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom metadata strip */}
-      <div
-        className="flex items-center px-6 shrink-0"
-        style={{
-          height: 48,
-          background: 'var(--color-bg-surface)',
-          borderTop: '1px solid var(--color-border-subtle)',
-        }}
-      >
-        {/* Three data points */}
-        {[
-          { label: 'LAST SYNC', value: verdict.accountMeta['Last Active'] ?? '—' },
-          { label: 'NODE ORIGIN', value: verdict.nodeOrigin },
-          { label: 'RISK VECTOR', value: verdict.riskVector },
-        ].map(({ label, value }, i) => (
-          <div key={label} className="flex items-center">
-            {i > 0 && (
-              <div
-                className="mx-4 self-stretch"
-                style={{ width: 1, background: 'var(--color-border-subtle)' }}
-              />
-            )}
-            <div className="flex items-center gap-2">
-              <span
-                className="uppercase tracking-wider"
-                style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-text-muted)' }}
-              >
-                {label}
-              </span>
-              <span
-                className="font-mono"
-                style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-text-primary)' }}
-              >
-                {value}
-              </span>
-            </div>
-          </div>
-        ))}
-
-        {/* System Audit Clear — pushed to far right */}
-        <div className="flex items-center gap-1.5 ml-auto">
-          <CheckCircle2 size={12} style={{ color: 'var(--color-status-safe)' }} />
-          <span style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-status-safe)' }}>
-            System Audit Clear
-          </span>
         </div>
       </div>
     </div>
@@ -490,15 +425,15 @@ function SidebarLayout({
   onClose,
 }: Omit<VerdictContentProps, 'verdictStatus' | 'mode'>) {
   const scoreValue = Math.round(verdict.trustScore * 100);
-  let scoreColorClass = 'bg-[var(--color-status-safe)]';
-  let scoreTextColor = 'text-[var(--color-status-safe)]';
+  let scoreColorClass = 'bg-status-safe';
+  let scoreTextColor = 'text-status-safe';
 
   if (scoreValue < 30) {
-    scoreColorClass = 'bg-[var(--color-status-danger)]';
-    scoreTextColor = 'text-[var(--color-status-danger)]';
+    scoreColorClass = 'bg-status-danger';
+    scoreTextColor = 'text-status-danger';
   } else if (scoreValue < 60) {
-    scoreColorClass = 'bg-[var(--color-status-warning)]';
-    scoreTextColor = 'text-[var(--color-status-warning)]';
+    scoreColorClass = 'bg-status-warning';
+    scoreTextColor = 'text-status-warning';
   }
 
   return (
@@ -507,14 +442,14 @@ function SidebarLayout({
       <div className="flex items-start justify-between mb-8">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-[var(--color-bg-raised)] flex items-center justify-center text-[var(--color-text-secondary)]">
+            <div className="w-12 h-12 rounded-full bg-bg-raised flex items-center justify-center text-text-secondary">
               <span className="text-xl">👤</span>
             </div>
             <div className="flex flex-col">
-              <h2 className="text-[var(--font-size-subheading)] font-[var(--font-weight-medium)] text-[var(--color-text-primary)]">
+              <h2 className="text-(length:--font-size-subheading) font-medium text-text-primary">
                 {verdict.entityName}
               </h2>
-              <span className="text-[var(--font-size-caption)] text-[var(--color-text-muted)] font-mono">
+              <span className="text-(length:--font-size-caption) text-text-muted font-mono">
                 ID: {verdict.nodeId}
               </span>
             </div>
@@ -524,7 +459,7 @@ function SidebarLayout({
           </div>
         </div>
         {onClose && (
-          <button onClick={onClose} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors p-1">
+          <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors p-1">
             <X size={20} />
           </button>
         )}
@@ -532,35 +467,35 @@ function SidebarLayout({
 
       {/* 2. Trust Score */}
       <div className="mb-8">
-        <div className="text-[var(--font-size-caption)] text-[var(--color-text-muted)] tracking-wider font-[var(--font-weight-medium)] mb-2">
+        <div className="text-(length:--font-size-caption) text-text-muted tracking-wider font-medium mb-2">
           TRUST SCORE
         </div>
-        <div className={`text-[var(--font-size-display)] font-[var(--font-weight-medium)] mb-4 ${scoreTextColor}`}>
-          {scoreValue} <span className="text-[var(--font-size-body)] text-[var(--color-text-muted)]">/ 100</span>
+        <div className={`text-(length:--font-size-display) font-medium mb-4 ${scoreTextColor}`}>
+          {scoreValue} <span className="text-(length:--font-size-body) text-text-muted">/ 100</span>
         </div>
         <TrustScoreBar score={verdict.trustScore} colorClass={scoreColorClass} indicators={verdict.indicators} />
       </div>
 
       {/* 3. Divider */}
-      <div className="h-px bg-[var(--color-border-subtle)] mb-8 w-full" />
+      <div className="h-px bg-border-subtle mb-8 w-full" />
 
       {/* 4. KOOG_AGENT_SUMMARY */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Terminal size={14} className="text-[var(--color-text-muted)]" />
-            <span className="text-[var(--font-size-label)] font-[var(--font-weight-medium)] font-mono text-[var(--color-text-primary)]">
+            <Terminal size={14} className="text-text-muted" />
+            <span className="text-(length:--font-size-label) font-medium font-mono text-text-primary">
               KOOG_AGENT_SUMMARY
             </span>
           </div>
         </div>
-        <div className="bg-[var(--color-bg-canvas)] border border-[var(--color-border-subtle)] rounded-[var(--radius-md)] p-[var(--spacing-md)]">
+        <div className="bg-bg-canvas border border-border-subtle rounded-md p-(--spacing-md)">
           <VerdictString text={verdict.agentSummary} />
         </div>
       </div>
 
       {/* 5. Divider */}
-      <div className="h-px bg-[var(--color-border-subtle)] mb-8 w-full" />
+      <div className="h-px bg-border-subtle mb-8 w-full" />
 
       {/* 6. Actions */}
       <div className="flex flex-col items-center gap-3 mb-8">
@@ -570,24 +505,12 @@ function SidebarLayout({
             console.log('Marked as false positive');
             onMarkFalsePositive();
           }}
-          className="text-[var(--font-size-caption)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors underline underline-offset-2"
+          className="text-(length:--font-size-caption) text-text-muted hover:text-text-primary transition-colors underline underline-offset-2"
         >
           Mark as false positive
         </button>
       </div>
 
-      {/* 7. Divider */}
-      <div className="h-px bg-[var(--color-border-subtle)] mb-8 w-full" />
-
-      {/* 8. Account Metadata Grid */}
-      <div className="grid grid-cols-2 gap-y-[var(--spacing-sm)] gap-x-4 mb-4">
-        {Object.entries(verdict.accountMeta).map(([key, value]) => (
-          <div key={key} className="flex flex-col">
-            <span className="text-[var(--font-size-caption)] text-[var(--color-text-muted)]">{key}</span>
-            <span className="text-[var(--font-size-caption)] text-[var(--color-text-primary)]">{value}</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

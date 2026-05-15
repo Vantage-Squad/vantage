@@ -112,7 +112,7 @@ export default function Graph() {
         <button
           onClick={loadGraphData}
           disabled={isRefreshing}
-          className="absolute top-3 right-3 z-10 flex items-center gap-2 px-3 py-2 rounded-[var(--radius-default)] transition-all hover:opacity-90"
+          className="absolute top-3 right-3 z-10 flex items-center gap-2 px-3 py-2 rounded-default transition-all hover:opacity-90"
           style={{
             background: 'var(--color-bg-raised)',
             border: '1px solid var(--color-border-emphasis)',
@@ -141,7 +141,7 @@ export default function Graph() {
         {/* Fetch error */}
         {fetchError && (
           <div
-            className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-[var(--radius-default)]"
+            className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-default"
             style={{
               background: 'var(--color-status-danger-subtle)',
               border: '1px solid var(--color-status-danger-border)',
@@ -159,7 +159,7 @@ export default function Graph() {
             className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
             style={{ background: 'color-mix(in srgb, var(--color-bg-canvas) 60%, transparent)' }}
           >
-            <div className="flex flex-col items-center max-w-[480px] text-center gap-4">
+            <div className="flex flex-col items-center max-w-120 text-center gap-4">
               <div
                 className="rounded-full flex items-center justify-center"
                 style={{ width: 80, height: 80, background: 'var(--color-bg-card)', border: '1px solid var(--color-border-subtle)' }}

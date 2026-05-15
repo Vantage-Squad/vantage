@@ -44,7 +44,7 @@ export default function FlaggedAccounts() {
         style={{ paddingBottom: 'var(--spacing-md)', borderBottom: '1px solid var(--color-border-subtle)' }}
       >
         <div
-          className="flex items-center justify-center rounded-[var(--radius-sm)]"
+          className="flex items-center justify-center rounded-sm"
           style={{ width: 32, height: 32, background: 'var(--color-status-danger-subtle)', border: '1px solid var(--color-status-danger-border)' }}
         >
           <ShieldAlert size={16} style={{ color: 'var(--color-status-danger)' }} />
@@ -61,7 +61,7 @@ export default function FlaggedAccounts() {
 
       {/* Table */}
       <div
-        className="rounded-[var(--radius-lg)] overflow-hidden"
+        className="rounded-(--radius-lg) overflow-hidden"
         style={{ border: '1px solid var(--color-border-subtle)', background: 'var(--color-bg-card)' }}
       >
         {/* Table header */}
@@ -96,7 +96,7 @@ export default function FlaggedAccounts() {
             <div
               key={account.nodeId}
               onClick={() => handleOpenVerdict(account.nodeId)}
-              className="grid grid-cols-[1fr_160px_120px_120px_48px] items-center px-5 py-4 cursor-pointer transition-colors hover:bg-[var(--color-bg-raised)] group"
+              className="grid grid-cols-[1fr_160px_120px_120px_48px] items-center px-5 py-4 cursor-pointer transition-colors hover:bg-bg-raised group"
               style={{
                 borderTop: i > 0 ? '1px solid var(--color-border-subtle)' : undefined,
               }}
