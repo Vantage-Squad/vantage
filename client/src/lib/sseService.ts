@@ -24,7 +24,6 @@ function getBackoffMs(attempt: number): number {
 }
 
 
-const NAMES = ["Adeyemi", "Okonkwo", "Ibrahim", "Mensah", "Diallo", "Eze", "Osei"];
 
 function generateMockTransaction(): Transaction {
     const rand = Math.random();
@@ -32,17 +31,20 @@ function generateMockTransaction(): Transaction {
     if (rand > 0.85) status = "CRITICAL";
     else if (rand > 0.60) status = "HIGH_RISK";
 
-    const name = ["J.", "B.", "T.", "A.", "M.", "O.", "C."][Math.floor(Math.random() * 7)] + " " + NAMES[Math.floor(Math.random() * NAMES.length)];
+    const cpName = ["Mainland", "Global Crypto", "Unknown Wallet", "Lagos Casino"][Math.floor(Math.random() * 4)];
     const id1 = Math.floor(1000 + Math.random() * 9000);
     const id2 = Math.floor(1000 + Math.random() * 9000);
 
     return {
-        id: crypto.randomUUID(),
-        name,
-        accountId: `${id1}-****-${id2}`,
+        id: `TX_${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+        accountId: `ACC-${id1}-${id2}`,
+        counterpartyId: `CP-${Math.floor(Math.random() * 100)}`,
+        counterpartyName: cpName,
         amount: 50 + Math.random() * 24950,
+        currency: "NGN",
         timestamp: new Date().toISOString(),
-        status
+        status,
+        trustScore: Math.random()
     };
 }
 
@@ -80,17 +82,19 @@ export const sseService: SSEService = {
                 eventSource.addEventListener("transaction", (e) => {
                     try {
                         const data = JSON.parse(e.data);
-                        // Ktor sends: accountId, amount, tier
                         let status: Transaction["status"] = data.tier as Transaction["status"];
                         if (!status) status = "SAFE";
 
                         onTransaction({
-                            id: crypto.randomUUID(),
-                            name: data.accountId,       // use full accountId as name
-                            accountId: data.accountId,  // full id for graph linking
+                            id: data.transactionRef || crypto.randomUUID(),
+                            accountId: data.accountId,
+                            counterpartyId: data.counterpartyId || "unknown_cp",
+                            counterpartyName: data.counterpartyName || data.accountId,
                             amount: data.amount,
-                            timestamp: new Date().toISOString(),
-                            status
+                            currency: data.currency || "NGN",
+                            timestamp: data.timestamp || new Date().toISOString(),
+                            status,
+                            trustScore: data.trustScore
                         });
                     } catch (err) {
                         console.error("Failed to parse transaction event", err);
@@ -100,13 +104,12 @@ export const sseService: SSEService = {
                 eventSource.addEventListener("alert", (e) => {
                     try {
                         const data = JSON.parse(e.data);
-                        // Ktor sends: accountId, tier, ts, riskFactors
                         onAlert({
-                            id: crypto.randomUUID(),
-                            severity: "critical",
-                            title: `High Risk Activity: ${data.accountId}`,
-                            description: data.riskFactors?.[0] || "Suspicious behavior detected",
-                            timestamp: "Just now",
+                            id: data.id || crypto.randomUUID(),
+                            severity: data.severity || "critical",
+                            title: data.title || `High Risk Activity: ${data.accountId}`,
+                            description: data.description || "Suspicious behavior detected",
+                            timestamp: data.timestamp || "Just now",
                             actions: [
                                 { label: "Freeze", variant: "primary" },
                                 { label: "Dismiss", variant: "ghost" }

@@ -3,13 +3,15 @@ export type AlertSeverity = 'critical' | 'warning' | 'info';
 export type StreamStatus = 'connecting' | 'live' | 'reconnecting' | 'offline';
 
 export interface Transaction {
-  id: string;
-  name: string;
-  accountId: string;         // masked format: "8824-****-9210"
+  id: string;                // transactionRef
+  accountId: string;
+  counterpartyId: string;
+  counterpartyName: string;
   amount: number;
-  timestamp: string;         // ISO UTC string
-  status: TransactionStatus;
-  avatarUrl?: string;
+  currency: string;
+  timestamp: string;         // ISO string
+  status: TransactionStatus; // maps to tier
+  trustScore?: number;
 }
 
 export interface Alert {

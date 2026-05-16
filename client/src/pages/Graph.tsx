@@ -45,28 +45,63 @@ export default function Graph() {
     loadGraphData();
   }, [loadGraphData]);
 
-  // ── Live feed → graph status sync ────────────────────────────────────────
+  // ── Live feed → graph status sync & dynamic injection ───────────────────
   useEffect(() => {
     if (!transactions || transactions.length === 0) return;
     const latest = transactions[0];
+    
     let newStatus: NodeStatus = 'clean';
     if (latest.status === 'CRITICAL') newStatus = 'flagged';
     else if (latest.status === 'HIGH_RISK') newStatus = 'watch';
 
-    const existingNode = graphData.nodes.find(n => n.accountId === latest.accountId || n.id === latest.accountId);
-    if (!existingNode || existingNode.status === newStatus) return;
+    const nodes = [...graphData.nodes];
+    const edges = [...graphData.edges];
+    let changed = false;
 
-    const updatedNodes = graphData.nodes.map(n =>
-      n.id === existingNode.id ? { ...n, status: newStatus } : n
-    );
-    const updatedEdges = graphData.edges.map(e => ({
-      ...e,
-      suspicious: (
-        updatedNodes.find(n => n.id === e.source)?.status === 'flagged' ||
-        updatedNodes.find(n => n.id === e.target)?.status === 'flagged'
-      ),
-    }));
-    dispatch(updateGraphData({ nodes: updatedNodes, edges: updatedEdges }));
+    // 1. Upsert Account Node
+    const accNodeIdx = nodes.findIndex(n => n.id === latest.accountId);
+    if (accNodeIdx === -1) {
+      nodes.push({
+        id: latest.accountId,
+        label: latest.accountId,
+        type: 'account',
+        status: newStatus,
+        trustScore: latest.trustScore ? Math.round(latest.trustScore * 100) : undefined
+      });
+      changed = true;
+    } else if (nodes[accNodeIdx].status !== newStatus) {
+      nodes[accNodeIdx] = { ...nodes[accNodeIdx], status: newStatus };
+      changed = true;
+    }
+
+    // 2. Upsert Counterparty Node
+    const cpNodeIdx = nodes.findIndex(n => n.id === latest.counterpartyId);
+    if (cpNodeIdx === -1) {
+      nodes.push({
+        id: latest.counterpartyId,
+        label: latest.counterpartyName || latest.counterpartyId,
+        type: 'account', // or individual/merchant if we had more types
+        status: 'clean'
+      });
+      changed = true;
+    }
+
+    // 3. Upsert Edge
+    const edgeId = `e_${latest.accountId}_${latest.counterpartyId}`;
+    if (!edges.some(e => e.id === edgeId)) {
+      edges.push({
+        id: edgeId,
+        source: latest.accountId,
+        target: latest.counterpartyId,
+        suspicious: newStatus === 'flagged',
+        weight: 1
+      });
+      changed = true;
+    }
+
+    if (changed) {
+      dispatch(updateGraphData({ nodes, edges }));
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactions]);
 
