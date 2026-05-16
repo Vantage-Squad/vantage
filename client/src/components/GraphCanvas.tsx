@@ -41,7 +41,7 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
   const [tooltip, setTooltip] = useState<{ id: string; label: string; x: number; y: number } | null>(null);
-  const [pulsingNodes, setPulsingNodes] = useState<{ id: string; x: number; y: number; size: number }[]>([]);
+  const [pulsingNodes, setPulsingNodes] = useState<{ id: string; x: number; y: number; size: number; color: string }[]>([]);
 
   useImperativeHandle(ref, () => ({
     zoomIn: () => cyRef.current?.zoom(cyRef.current.zoom() * 1.25),
@@ -185,11 +185,18 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
 
     // Update pulse overlay positions whenever cytoscape renders
     cy.on('render', () => {
-      const flagged = cy.nodes('[status="flagged"]:visible');
+      const risky = cy.nodes('[status="flagged"]:visible, [status="watch"]:visible');
       setPulsingNodes(
-        flagged.map(n => {
+        risky.map(n => {
           const pos = n.renderedPosition();
-          return { id: n.id(), x: pos.x, y: pos.y, size: STATUS_SIZE.flagged };
+          const status = n.data('status') as string;
+          return { 
+            id: n.id(), 
+            x: pos.x, 
+            y: pos.y, 
+            size: STATUS_SIZE[status] || STATUS_SIZE.default,
+            color: STATUS_COLOR[status] || STATUS_COLOR.default
+          };
         })
       );
     });
@@ -344,7 +351,7 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
             left: pos.x,
             top: pos.y,
             transform: 'translate(-50%, -50%)',
-            background: '#EF4444',
+            background: pos.color,
             animation: 'criticalPulse 1.6s ease-out infinite',
           }}
         />
