@@ -4,7 +4,7 @@ info:
   description: "AI-powered audit layer for Nigerian fintech. Middleware for detecting mule accounts and synthetic identities using graph network analysis."
   version: "1.0.0"
 servers:
-  - url: "http://localhost:8080"
+  - url: "http://localhost:8081"
     description: "Local development server"
 paths:
   /health:

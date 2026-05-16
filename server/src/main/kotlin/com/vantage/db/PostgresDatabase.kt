@@ -13,9 +13,39 @@ object PostgresDatabase {
 
     fun init(config: AppConfig) {
         val hikariConfig = HikariConfig().apply {
-            jdbcUrl = config.postgresUrl
-            username = config.postgresUser
-            password = config.postgresPassword
+            var rawUrl = config.postgresUrl
+            var finalUser = config.postgresUser
+            var finalPass = config.postgresPassword
+
+            // Handle postgres:// or postgresql:// with potential user:pass@host
+            val cleanedUrl = rawUrl.removePrefix("jdbc:").removePrefix("postgresql://").removePrefix("postgres://")
+            if (cleanedUrl.contains("@")) {
+                val authAndHost = cleanedUrl.split("@")
+                val auth = authAndHost[0]
+                val hostAndDb = authAndHost[1]
+                
+                if (auth.contains(":")) {
+                    val userPass = auth.split(":")
+                    finalUser = userPass[0]
+                    finalPass = userPass[1]
+                } else {
+                    finalUser = auth
+                }
+                rawUrl = "jdbc:postgresql://$hostAndDb"
+            } else {
+                rawUrl = when {
+                    rawUrl.startsWith("jdbc:postgresql://") -> rawUrl
+                    rawUrl.startsWith("postgresql://") -> "jdbc:$rawUrl"
+                    rawUrl.startsWith("postgres://") -> "jdbc:postgresql://" + rawUrl.removePrefix("postgres://")
+                    else -> rawUrl
+                }
+            }
+
+            val sslParams = "ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory"
+            val timeoutParams = "connectTimeout=30&socketTimeout=30&loginTimeout=30&tcpKeepAlive=true"
+            jdbcUrl = if (rawUrl.contains("?")) "$rawUrl&$sslParams&$timeoutParams" else "$rawUrl?$sslParams&$timeoutParams"
+            username = finalUser
+            password = finalPass
             driverClassName = "org.postgresql.Driver"
             maximumPoolSize = 10
             isAutoCommit = false
@@ -23,6 +53,7 @@ object PostgresDatabase {
             validate()
         }
         
+        println("[Postgres] Attempting connection to: ${hikariConfig.jdbcUrl.split("?")[0]}")
         dataSource = HikariDataSource(hikariConfig)
         Database.connect(dataSource!!)
 

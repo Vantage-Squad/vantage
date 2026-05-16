@@ -45,7 +45,8 @@ class QueriesTest {
     @Test
     fun testGraphNetworkQuery() {
         val query = Queries.graphNetwork()
-        assertTrue(query.contains("MATCH (a:Account)-[t:TRANSACTED_WITH]->(c:Counterparty)"))
+        assertTrue(query.contains("MATCH (a:Account)"))
+        assertTrue(query.contains("MATCH (a)-[t:TRANSACTED_WITH]-(n)"))
         assertTrue(query.contains("LIMIT ${"$"}limit"))
     }
 }

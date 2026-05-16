@@ -69,7 +69,7 @@ export const sseService: SSEService = {
                     return;
                 }
 
-                const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+                const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8081";
                 eventSource = new EventSource(`${baseUrl}/api/v1/events?token=${token}`);
 
                 eventSource.onopen = () => {

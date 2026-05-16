@@ -44,9 +44,9 @@ class AppConfig(config: ApplicationConfig) {
     val geoIpApiUrl: String = env("GEOIP_API_URL") ?: "http://ip-api.com/json/"
 
     // Admin Config
-    val adminEmail: String? = env("ADMIN_EMAIL")
-    val adminPassword: String? = env("ADMIN_PASSWORD")
-    val adminPasswordHash: String? = env("ADMIN_PASSWORD_HASH")
+    val adminEmail: String = env("ADMIN_EMAIL") ?: "abraham.o.bankole@gmail.com"
+    val adminPassword: String? = env("ADMIN_PASSWORD") ?: "password"
+    val adminPasswordHash: String = env("ADMIN_PASSWORD_HASH") ?: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
 
     val jwtSecret: String = env("JWT_SECRET") ?: "vantage-jwt-secret-2026"
 

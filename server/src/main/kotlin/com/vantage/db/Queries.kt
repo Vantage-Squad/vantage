@@ -70,10 +70,8 @@ object Queries {
 
     fun pageRank() = """
         MATCH (a:Account)
-        OPTIONAL MATCH (a)-[t:TRANSACTED_WITH]->()
-        WITH a, count(t) AS degree
-        OPTIONAL MATCH ()-[incoming:TRANSACTED_WITH]->(a)
-        WITH a, degree + count(incoming) AS totalDegree
+        OPTIONAL MATCH (a)-[r:TRANSACTED_WITH]-()
+        WITH a, count(r) AS totalDegree
         WITH collect({id: a.id, degree: totalDegree}) AS nodes, max(totalDegree) AS maxDegree
         UNWIND nodes AS n
         RETURN n.id AS id, CASE WHEN maxDegree > 0 THEN toFloat(n.degree) / maxDegree ELSE 0.0 END AS rank
@@ -105,7 +103,10 @@ object Queries {
 
     fun graphNetwork() = """
         MATCH (a:Account)
-        WHERE ${"$"}accountId IS NULL OR a.id = ${"$"}accountId
+        WHERE ${"$"}search IS NULL 
+           OR a.id = ${"$"}search 
+           OR a.email = ${"$"}search 
+           OR a.bvn = ${"$"}search
         WITH a
         LIMIT ${"$"}limit
         MATCH (a)-[t:TRANSACTED_WITH]-(n)
@@ -115,7 +116,7 @@ object Queries {
         MATCH (a:Account)-[t:TRANSACTED_WITH]->(c:Counterparty)
         RETURN a.id AS accountId, t.amount AS amount, t.currency AS currency, 
                t.timestamp AS timestamp, t.transactionRef AS transactionRef, 
-               c.id AS counterpartyId
-        ORDER BY t.timestamp DESC LIMIT 10
+               c.id AS counterpartyId, a.trustScore AS trustScore
+        ORDER BY t.timestamp DESC LIMIT 20
     """.trimIndent()
 }

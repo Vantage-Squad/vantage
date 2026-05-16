@@ -1,6 +1,8 @@
 package com.vantage.db
 
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.util.UUID
 
@@ -15,7 +17,7 @@ data class User(
 object UserRepository {
     
     suspend fun findByEmail(email: String): User? = PostgresDatabase.dbQuery {
-        UsersTable.select { UsersTable.email eq email }
+        UsersTable.selectAll().where { UsersTable.email eq email }
             .map { rowToUser(it) }
             .singleOrNull()
     }

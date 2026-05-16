@@ -14,7 +14,10 @@ data class Account(
     val geoCountry: String? = null,
     val trustScore: Double = 0.5,
     val isBlacklisted: Boolean = false,
-    val createdAt: String? = null
+    val createdAt: String? = null,
+    val lastSeen: String? = null,
+    val isFrozen: Boolean = false,
+    val latestRecommendation: String? = null
 )
 
 @Serializable
