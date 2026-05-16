@@ -27,6 +27,10 @@ import org.jetbrains.exposed.sql.selectAll
 @Suppress("DEPRECATION")
 fun Route.configureApiRoutes() {
     intercept(ApplicationCallPipeline.Call) {
+        if (call.request.httpMethod == HttpMethod.Options) {
+            proceed()
+            return@intercept
+        }
         val path = call.request.uri.substringBefore('?')
         if (path.endsWith("/login")) {
             proceed()
