@@ -58,12 +58,32 @@ object PostgresDatabase {
         Database.connect(dataSource!!)
 
         // Run migrations
-        val flyway = Flyway.configure()
-            .dataSource(dataSource)
-            .load()
-        flyway.migrate()
+        println("[Postgres] Running Flyway migrations...")
+        try {
+            val flyway = Flyway.configure()
+                .dataSource(dataSource)
+                .locations("classpath:db/migration")
+                .baselineOnMigrate(true)
+                .load()
+            val result = flyway.migrate()
+            println("[Postgres] Flyway migration successful: ${result.migrationsExecuted} migrations executed.")
+        } catch (e: Exception) {
+            println("[Postgres] Flyway migration failed: ${e.message}")
+            e.printStackTrace()
+            // Optional: Fallback to Exposed SchemaUtils if Flyway fails in this environment
+        }
         
-        println("[Postgres] Database initialized and migrations applied.")
+        println("[Postgres] Database initialization complete.")
+        
+        // Final fallback: Ensure tables exist using Exposed SchemaUtils
+        // This acts as a safety net if Flyway migrations didn't run for some reason
+        org.jetbrains.exposed.sql.transactions.transaction {
+            org.jetbrains.exposed.sql.SchemaUtils.createMissingTablesAndColumns(
+                UsersTable,
+                TransactionHistoryTable,
+                AccountStatesTable
+            )
+        }
     }
 
     suspend fun <T> dbQuery(block: suspend () -> T): T =
