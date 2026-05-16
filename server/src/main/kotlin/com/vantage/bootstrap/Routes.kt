@@ -104,20 +104,33 @@ fun Route.configureApiRoutes() {
     }
 
     get("/trust/{accountId}") {
-        val accountId = call.parameters["accountId"] ?: return@get
-        val account = memgraph.readSingle(Queries.findAccountById(), mapOf("id" to accountId))
-        if (account == null) {
-            call.respond(HttpStatusCode.NotFound, buildJsonObject { put("error", "Account not found") })
-            return@get
+        try {
+            val accountId = call.parameters["accountId"] ?: return@get
+            val account = memgraph.readSingle(Queries.findAccountById(), mapOf("id" to accountId))
+            if (account == null) {
+                call.respond(HttpStatusCode.NotFound, buildJsonObject { put("error", "Account not found") })
+                return@get
+            }
+            val ts = trustService.compute(accountId)
+            val explanation = aiService.explain(ts)
+            
+            // Save the explanation to history - Wrapped to prevent blocking
+            try {
+                com.vantage.db.TransactionRepository.saveHistory(ts, explanation.summary, explanation.verdict)
+            } catch (e: Exception) {
+                println("[Routes] Failed to save history to Postgres: ${e.message}")
+            }
+            
+            val result = ts.copy(explanation = explanation)
+            call.respondText(json.encodeToString(result), ContentType.Application.Json)
+        } catch (e: Exception) {
+            println("[Routes] Forensic analysis failed: ${e.message}")
+            e.printStackTrace()
+            call.respond(HttpStatusCode.InternalServerError, buildJsonObject {
+                put("error", e.message ?: "Internal forensic analysis failure")
+                put("exception", e.javaClass.simpleName)
+            })
         }
-        val ts = trustService.compute(accountId)
-        val explanation = aiService.explain(ts)
-        
-        // Save the explanation to history
-        com.vantage.db.TransactionRepository.saveHistory(ts, explanation.summary, explanation.verdict)
-        
-        val result = ts.copy(explanation = explanation)
-        call.respondText(json.encodeToString(result), ContentType.Application.Json)
     }
 
     post("/audit/proof-of-life") {
