@@ -42,7 +42,8 @@ object PostgresDatabase {
             }
 
             val sslParams = "ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory"
-            jdbcUrl = if (rawUrl.contains("?")) "$rawUrl&$sslParams" else "$rawUrl?$sslParams"
+            val timeoutParams = "connectTimeout=30&socketTimeout=30&loginTimeout=30&tcpKeepAlive=true"
+            jdbcUrl = if (rawUrl.contains("?")) "$rawUrl&$sslParams&$timeoutParams" else "$rawUrl?$sslParams&$timeoutParams"
             username = finalUser
             password = finalPass
             driverClassName = "org.postgresql.Driver"
