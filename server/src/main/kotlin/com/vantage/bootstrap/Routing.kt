@@ -93,7 +93,7 @@ fun Application.configureRouting() {
 
             // 4. Automated AI Analysis for High Risk
             if (ts.tier == Tier.CRITICAL || ts.tier == Tier.HIGH_RISK) {
-                val explanation = aiService.explain(ts)
+                val explanation = AppContext.aiService.explain(ts)
                 com.vantage.db.TransactionRepository.saveHistory(ts, explanation.summary, explanation.verdict)
             }
             

@@ -45,6 +45,7 @@ fun Application.configureStartup() {
             }
         }
         AppContext.sseService.start(this, memgraph)
+        AppContext.aiService = com.vantage.service.AiService()
         
         // Start Network Centrality Worker
         val networkWorker = com.vantage.service.NetworkAlertWorker(AppContext.sseService)
