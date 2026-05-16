@@ -97,13 +97,13 @@ export default function FlaggedAccounts() {
       >
         {/* Table header */}
         <div
-          className="grid grid-cols-[1fr_180px_140px_160px_100px] px-5 py-3"
+          className="grid grid-cols-[180px_140px_140px_160px_1fr_100px] px-5 py-3"
           style={{
             background: 'var(--color-bg-surface)',
             borderBottom: '1px solid var(--color-border-subtle)',
           }}
         >
-          {['Account', 'Last Seen', 'Trust Score', 'Risk Level', 'Actions'].map(col => (
+          {['Account ID', 'Last Seen', 'Trust Score', 'Risk Level', 'AI Recommendation', 'Actions'].map(col => (
             <span
               key={col}
               className="uppercase tracking-wider"
@@ -127,17 +127,17 @@ export default function FlaggedAccounts() {
             <div
               key={account.id}
               onClick={() => handleOpenVerdict(account.id)}
-              className="grid grid-cols-[1fr_180px_140px_160px_100px] items-center px-5 py-4 cursor-pointer transition-colors hover:bg-bg-raised group"
+              className="grid grid-cols-[180px_140px_140px_160px_1fr_100px] items-center px-5 py-4 cursor-pointer transition-colors hover:bg-bg-raised group"
               style={{
                 borderTop: i > 0 ? '1px solid var(--color-border-subtle)' : undefined,
               }}
             >
               {/* Account ID */}
-              <div className="flex flex-col gap-0.5">
-                <span className="font-mono" style={{ fontSize: 'var(--font-size-body)', fontWeight: 500, color: 'var(--color-text-primary)' }}>
+              <div className="flex flex-col gap-0.5 overflow-hidden">
+                <span className="font-mono truncate" title={account.id} style={{ fontSize: 'var(--font-size-body)', fontWeight: 500, color: 'var(--color-text-primary)' }}>
                   {account.id}
                 </span>
-                <span style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-text-muted)' }}>
+                <span className="truncate" style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-text-muted)' }}>
                   {account.email || 'No email associated'}
                 </span>
               </div>
@@ -190,6 +190,18 @@ export default function FlaggedAccounts() {
                   );
                 })()}
               </div>
+
+              {/* AI Recommendation */}
+              <div className="px-2">
+                 <p 
+                  className="line-clamp-2"
+                  style={{ fontSize: 'var(--font-size-caption)', color: 'var(--color-text-secondary)', fontStyle: account.latestRecommendation ? 'normal' : 'italic' }}
+                >
+                  {account.latestRecommendation || 'Analysis pending...'}
+                </p>
+              </div>
+
+              {/* Actions */}
 
               {/* Actions */}
               <div className="flex items-center gap-4 justify-end">

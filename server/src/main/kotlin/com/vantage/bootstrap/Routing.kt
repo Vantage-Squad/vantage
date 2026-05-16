@@ -90,6 +90,12 @@ fun Application.configureRouting() {
                 "trustScore" to ts.ts,
                 "tier" to ts.tier.name
             ))
+
+            // 4. Automated AI Analysis for High Risk
+            if (ts.tier == Tier.CRITICAL || ts.tier == Tier.HIGH_RISK) {
+                val explanation = aiService.explain(ts)
+                com.vantage.db.TransactionRepository.saveHistory(ts, explanation.summary, explanation.verdict)
+            }
             
             // 3. Emit Enriched SSE Event
             val eventData = buildJsonObject {
