@@ -7,7 +7,7 @@ Vantage is an AI-powered audit layer that detects mule accounts and synthetic id
 - **Graph-Based Analysis**: Uses Memgraph to analyze transaction networks and detect suspicious clusters.
 - **Trust Scoring Engine**: Multi-factor scoring using PageRank (centrality), transaction velocity, and proximity to known bad actors.
 - **AI-Powered Explanations**: Integrates with Google Gemini (via Koog SDK) to provide natural language explanations for fraud verdicts.
-- **Real-Time Monitoring**: SSE (Server-Sent Events) for real-time alerts and dashboard updates.
+- **Real-Time Monitoring**: SSE (Server-Sent Events) for real-time alerts and dashboard updates (Expose 8081).
 - **Squad Integration**: Ingests transactions via webhooks and performs "proof-of-life" audits.
 
 ## Tech Stack
@@ -43,13 +43,13 @@ Vantage is an AI-powered audit layer that detects mule accounts and synthetic id
 
 4. **Health Check**:
    ```bash
-   curl http://localhost:8080/health
+   curl http://localhost:8081/health
    ```
 
 ## API Documentation
 
 The full OpenAPI specification is available at `server/src/main/resources/documentation.yaml`.
-When the server is running, you can access the Swagger UI at `http://localhost:8080/swagger`.
+When the server is running, you can access the Swagger UI at `http://localhost:8081/swagger`.
 
 ## License
 
