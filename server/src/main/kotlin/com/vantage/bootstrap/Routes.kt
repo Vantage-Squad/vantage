@@ -45,7 +45,6 @@ fun Route.configureApiRoutes() {
     val memgraph = AppContext.memgraph
     val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
     val trustService = TrustService()
-    val aiService = AiService()
     val squadClient = SquadClient()
     val geoIpService = GeoIpService()
 
@@ -116,7 +115,7 @@ fun Route.configureApiRoutes() {
                 return@get
             }
             val ts = trustService.compute(accountId)
-            val explanation = aiService.explain(ts)
+            val explanation = AppContext.aiService.explain(ts)
             
             // Save the explanation to history - Wrapped to prevent blocking
             try {
@@ -149,7 +148,7 @@ fun Route.configureApiRoutes() {
             return@post
         }
         val ts = trustService.compute(accountId)
-        val explanation = aiService.explain(ts)
+        val explanation = AppContext.aiService.explain(ts)
         val response = buildJsonObject {
             put("accountId", accountId)
             put("trustScore", ts.ts)
