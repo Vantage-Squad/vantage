@@ -66,27 +66,22 @@ class NetworkAlertWorker(private val sseService: SseService) {
     }
 
     private suspend fun detectFraudRings() {
-        // CALL louvain.get() YIELD node, community_id
         val results = memgraph.query(Queries.communityDetection())
-        val communities = mutableMapOf<Long, MutableList<Map<*, *>>>()
+        val clusters = results.groupBy { it["community_id"] as? String ?: "" }
         
-        results.forEach { row ->
-            val communityId = (row["community_id"] as? Number)?.toLong() ?: return@forEach
-            val node = row["node"] as? Map<*, *> ?: return@forEach
-            communities.getOrPut(communityId) { mutableListOf() }.add(node)
-        }
-
-        communities.forEach { (cid, nodes) ->
-            // Check if this community contains any blacklisted accounts
-            val blacklistedMember = nodes.find { (it["isBlacklisted"] as? Boolean) == true }
+        clusters.forEach { (cpId, pairs) ->
+            if (cpId.isEmpty()) return@forEach
             
-            if (blacklistedMember != null) {
-                // All other nodes in this community are now high-risk by association
-                nodes.forEach { node ->
-                    if ((node["isBlacklisted"] as? Boolean) != true) {
-                        val id = node["id"] as? String ?: return@forEach
-                        triggerAlert(id, "Fraud Ring Association", "Account $id has been identified as part of a high-risk community ($cid) linked to known fraudulent activity.", "critical")
-                    }
+            val accountIds = pairs.flatMap { listOf(it["source"] as String, it["target"] as String) }.toSet()
+            val anyBlacklisted = pairs.any { (it["sBlack"] as? Boolean) == true || (it["tBlack"] as? Boolean) == true }
+            
+            if (anyBlacklisted) {
+                accountIds.forEach { id ->
+                    triggerAlert(id, "Fraud Ring Association", "Account $id is linked via shared counterparty ($cpId) to a known fraudulent entity. High community risk detected.", "critical")
+                }
+            } else if (accountIds.size > 5) {
+                accountIds.forEach { id ->
+                    triggerAlert(id, "High Density Cluster", "Account $id is part of a suspicious cluster of ${accountIds.size} accounts sharing counterparty $cpId.", "warning")
                 }
             }
         }

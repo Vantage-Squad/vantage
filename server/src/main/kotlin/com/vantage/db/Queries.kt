@@ -68,7 +68,14 @@ object Queries {
         RETURN count(t) AS count
     """.trimIndent()
 
-    fun pageRank() = "CALL pagerank.get() YIELD node, rank RETURN node.id as id, rank"
+    fun pageRank() = """
+        MATCH (a:Account)
+        OPTIONAL MATCH (a)-[r:TRANSACTED_WITH]-()
+        WITH a, count(r) AS totalDegree
+        WITH collect({id: a.id, degree: totalDegree}) AS nodes, max(totalDegree) AS maxDegree
+        UNWIND nodes AS n
+        RETURN n.id AS id, CASE WHEN maxDegree > 0 THEN toFloat(n.degree) / maxDegree ELSE 0.0 END AS rank
+    """.trimIndent()
 
     fun proximityToBlacklisted() = """
         MATCH path = shortestPath(
@@ -113,7 +120,11 @@ object Queries {
         RETURN c.id as counterpartyId, c.name as name, connectedAccounts, totalVolume
     """.trimIndent()
 
-    fun communityDetection() = "CALL louvain.get() YIELD node, community_id"
+    fun communityDetection() = """
+        MATCH (a1:Account)-[:TRANSACTED_WITH]->(c:Counterparty)<-[:TRANSACTED_WITH]-(a2:Account)
+        WHERE a1.id < a2.id
+        RETURN a1.id as source, a1.isBlacklisted as sBlack, a2.id as target, a2.isBlacklisted as tBlack, c.id as community_id
+    """.trimIndent()
     fun globalRecentTransactions() = """
         MATCH (a:Account)-[t:TRANSACTED_WITH]->(c:Counterparty)
         RETURN a.id AS accountId, t.amount AS amount, t.currency AS currency, 
