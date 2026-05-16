@@ -17,6 +17,7 @@ class NetworkAlertWorker(private val sseService: SseService) {
                     checkCentrality()
                     checkLargeTransactions()
                     checkSuspiciousClusters()
+                    detectFraudRings()
                 } catch (e: Exception) {
                     println("[NetworkAlertWorker] Error in alert worker: ${e.message}")
                 }
@@ -61,6 +62,33 @@ class NetworkAlertWorker(private val sseService: SseService) {
             val volume = (row["totalVolume"] as? Number)?.toDouble() ?: 0.0
             
             triggerAlert(cpId, "Suspicious Cluster Detected", "Counterparty '$name' ($cpId) is being used by $count accounts with a total volume of ${"%.2f".format(volume)}. Potential Sybil attack or fraud ring hub.", "critical")
+        }
+    }
+
+    private suspend fun detectFraudRings() {
+        // CALL louvain.get() YIELD node, community_id
+        val results = memgraph.query(Queries.communityDetection())
+        val communities = mutableMapOf<Long, MutableList<Map<*, *>>>()
+        
+        results.forEach { row ->
+            val communityId = (row["community_id"] as? Number)?.toLong() ?: return@forEach
+            val node = row["node"] as? Map<*, *> ?: return@forEach
+            communities.getOrPut(communityId) { mutableListOf() }.add(node)
+        }
+
+        communities.forEach { (cid, nodes) ->
+            // Check if this community contains any blacklisted accounts
+            val blacklistedMember = nodes.find { (it["isBlacklisted"] as? Boolean) == true }
+            
+            if (blacklistedMember != null) {
+                // All other nodes in this community are now high-risk by association
+                nodes.forEach { node ->
+                    if ((node["isBlacklisted"] as? Boolean) != true) {
+                        val id = node["id"] as? String ?: return@forEach
+                        triggerAlert(id, "Fraud Ring Association", "Account $id has been identified as part of a high-risk community ($cid) linked to known fraudulent activity.", "critical")
+                    }
+                }
+            }
         }
     }
 

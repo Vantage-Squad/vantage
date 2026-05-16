@@ -68,14 +68,7 @@ object Queries {
         RETURN count(t) AS count
     """.trimIndent()
 
-    fun pageRank() = """
-        MATCH (a:Account)
-        OPTIONAL MATCH (a)-[r:TRANSACTED_WITH]-()
-        WITH a, count(r) AS totalDegree
-        WITH collect({id: a.id, degree: totalDegree}) AS nodes, max(totalDegree) AS maxDegree
-        UNWIND nodes AS n
-        RETURN n.id AS id, CASE WHEN maxDegree > 0 THEN toFloat(n.degree) / maxDegree ELSE 0.0 END AS rank
-    """.trimIndent()
+    fun pageRank() = "CALL pagerank.get() YIELD node, rank RETURN node.id as id, rank"
 
     fun proximityToBlacklisted() = """
         MATCH path = shortestPath(
@@ -119,6 +112,8 @@ object Queries {
         WHERE connectedAccounts > 5 AND totalVolume > 500000
         RETURN c.id as counterpartyId, c.name as name, connectedAccounts, totalVolume
     """.trimIndent()
+
+    fun communityDetection() = "CALL louvain.get() YIELD node, community_id"
     fun globalRecentTransactions() = """
         MATCH (a:Account)-[t:TRANSACTED_WITH]->(c:Counterparty)
         RETURN a.id AS accountId, t.amount AS amount, t.currency AS currency, 
