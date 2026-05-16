@@ -62,12 +62,22 @@ class SseService {
                         }
 
                         newEvents.reversed().forEach { event ->
+                            val ts = (event["trustScore"] as? Number)?.toDouble() ?: 0.5
+                            val config = com.vantage.AppContext.config
+                            val tier = when {
+                                ts > config.trustScoreSafeThreshold -> "SAFE"
+                                ts >= config.trustScoreHighRiskThreshold -> "HIGH_RISK"
+                                else -> "CRITICAL"
+                            }
+
                             val data = buildJsonObject {
                                 put("accountId", event["accountId"] as? String ?: "")
                                 put("amount", (event["amount"] as? Number)?.toDouble() ?: 0.0)
                                 put("transactionRef", event["transactionRef"] as? String ?: "")
                                 put("timestamp", event["timestamp"]?.toString() ?: "")
                                 put("counterpartyId", event["counterpartyId"] as? String ?: "")
+                                put("trustScore", ts)
+                                put("tier", tier)
                             }.toString()
                             emit("transaction", data)
                         }

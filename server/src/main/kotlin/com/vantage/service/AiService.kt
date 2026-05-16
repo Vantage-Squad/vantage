@@ -65,7 +65,7 @@ class AiService {
         }
         val action = when (ts.tier) {
             Tier.SAFE -> "Allow transaction"
-            Tier.HIGH_RISK -> "Flag for manual review"
+            Tier.HIGH_RISK -> "Mark as false positive"
             Tier.CRITICAL -> "Block transaction and trigger alert"
         }
         val summary = "Trust score ${ts.ts} (${ts.tier}). Risk factors: ${if (riskFactors.isEmpty()) "none detected" else riskFactors.joinToString("; ")}."

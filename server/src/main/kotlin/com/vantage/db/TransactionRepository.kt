@@ -36,11 +36,15 @@ object TransactionRepository {
         // Upsert account state
         val updated = AccountStatesTable.update({ AccountStatesTable.accountId eq trustScore.accountId }) {
             it[this.lastSeen] = OffsetDateTime.now().toInstant()
+            if (agentSummary != null) {
+                it[this.latestRecommendation] = agentSummary
+            }
         }
         if (updated == 0) {
             AccountStatesTable.insert {
                 it[this.accountId] = trustScore.accountId
                 it[this.lastSeen] = OffsetDateTime.now().toInstant()
+                it[this.latestRecommendation] = agentSummary
             }
         }
     }
@@ -49,5 +53,9 @@ object TransactionRepository {
         TransactionHistoryTable.selectAll().where { 
             (TransactionHistoryTable.accountId eq accountId) and (TransactionHistoryTable.isFalsePositive eq true) 
         }.count().toInt()
+    }
+
+    suspend fun getAccountState(accountId: String) = PostgresDatabase.dbQuery {
+        AccountStatesTable.selectAll().where { AccountStatesTable.accountId eq accountId }.singleOrNull()
     }
 }

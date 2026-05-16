@@ -28,6 +28,12 @@ class TrustService {
             clamped >= config.trustScoreHighRiskThreshold -> Tier.HIGH_RISK
             else -> Tier.CRITICAL
         }
+
+        // Auto-flag if CRITICAL
+        if (tier == Tier.CRITICAL) {
+            memgraph.execute(Queries.flagAccount(), mapOf("id" to accountId))
+        }
+
         memgraph.execute(Queries.updateTrustScore(), mapOf("id" to accountId, "ts" to clamped))
         val score = TrustScore(
             accountId = accountId,

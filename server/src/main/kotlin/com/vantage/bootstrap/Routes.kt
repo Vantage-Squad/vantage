@@ -22,6 +22,7 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.addJsonObject
+import org.jetbrains.exposed.sql.selectAll
 
 @Suppress("DEPRECATION")
 fun Route.configureApiRoutes() {
@@ -110,6 +111,10 @@ fun Route.configureApiRoutes() {
         }
         val ts = trustService.compute(accountId)
         val explanation = aiService.explain(ts)
+        
+        // Save the explanation to history
+        com.vantage.db.TransactionRepository.saveHistory(ts, explanation.summary, explanation.verdict)
+        
         val result = ts.copy(explanation = explanation)
         call.respondText(json.encodeToString(result), ContentType.Application.Json)
     }
@@ -191,11 +196,19 @@ fun Route.configureApiRoutes() {
         val accounts = results.mapNotNull { row ->
             val node = row["a"] as? Map<*, *>
             node?.let {
+                val id = it["id"] as? String ?: ""
+                
+                // Fetch state from Postgres using repository
+                val state = com.vantage.db.TransactionRepository.getAccountState(id)
+
                 Account(
-                    id = it["id"] as? String ?: "",
+                    id = id,
                     email = it["email"] as? String,
                     isBlacklisted = it["isBlacklisted"] as? Boolean ?: false,
-                    trustScore = (it["trustScore"] as? Number)?.toDouble() ?: 0.5
+                    trustScore = (it["trustScore"] as? Number)?.toDouble() ?: 0.5,
+                    lastSeen = state?.get(com.vantage.db.AccountStatesTable.lastSeen)?.toString(),
+                    isFrozen = state?.get(com.vantage.db.AccountStatesTable.isFrozen) ?: false,
+                    latestRecommendation = state?.get(com.vantage.db.AccountStatesTable.latestRecommendation)
                 )
             }
         }
@@ -226,9 +239,9 @@ fun Route.configureApiRoutes() {
     }
 
     get("/graph/network") {
-        val accountId = call.request.queryParameters["accountId"]
+        val search = call.request.queryParameters["search"] ?: call.request.queryParameters["accountId"]
         val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 100
-        val results = memgraph.query(Queries.graphNetwork(), mapOf("accountId" to accountId, "limit" to limit))
+        val results = memgraph.query(Queries.graphNetwork(), mapOf("search" to search, "limit" to limit))
         val nodes = mutableListOf<kotlinx.serialization.json.JsonObject>()
         val edges = mutableListOf<kotlinx.serialization.json.JsonObject>()
         for (row in results) {

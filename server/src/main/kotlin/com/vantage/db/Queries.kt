@@ -103,7 +103,10 @@ object Queries {
 
     fun graphNetwork() = """
         MATCH (a:Account)
-        WHERE ${"$"}accountId IS NULL OR a.id = ${"$"}accountId
+        WHERE ${"$"}search IS NULL 
+           OR a.id = ${"$"}search 
+           OR a.email = ${"$"}search 
+           OR a.bvn = ${"$"}search
         WITH a
         LIMIT ${"$"}limit
         MATCH (a)-[t:TRANSACTED_WITH]-(n)
@@ -113,7 +116,7 @@ object Queries {
         MATCH (a:Account)-[t:TRANSACTED_WITH]->(c:Counterparty)
         RETURN a.id AS accountId, t.amount AS amount, t.currency AS currency, 
                t.timestamp AS timestamp, t.transactionRef AS transactionRef, 
-               c.id AS counterpartyId
-        ORDER BY t.timestamp DESC LIMIT 10
+               c.id AS counterpartyId, a.trustScore AS trustScore
+        ORDER BY t.timestamp DESC LIMIT 20
     """.trimIndent()
 }

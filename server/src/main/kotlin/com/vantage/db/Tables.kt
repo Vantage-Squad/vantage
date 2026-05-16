@@ -34,6 +34,7 @@ object AccountStatesTable : Table("account_states") {
     val lastSeen = timestamp("last_seen").defaultExpression(org.jetbrains.exposed.sql.javatime.CurrentTimestamp)
     val isFrozen = bool("is_frozen").default(false)
     val frozenById = uuid("frozen_by_id").references(UsersTable.id).nullable()
+    val latestRecommendation = text("latest_recommendation").nullable()
 
     override val primaryKey = PrimaryKey(accountId)
 }
