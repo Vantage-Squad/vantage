@@ -16,10 +16,11 @@ class NetworkAlertWorker(private val sseService: SseService) {
                 try {
                     checkCentrality()
                     checkLargeTransactions()
+                    checkSuspiciousClusters()
                 } catch (e: Exception) {
                     println("[NetworkAlertWorker] Error in alert worker: ${e.message}")
                 }
-                delay(60000) // Check every minute
+                delay(30000) // Increase frequency to 30s
             }
         }
     }
@@ -48,6 +49,18 @@ class NetworkAlertWorker(private val sseService: SseService) {
             if (amount > 1000000.0) { // Large amount involvement
                 triggerAlert(accountId, "Large Amount Involvement", "Account $accountId involved in a transaction of ${"%.2f".format(amount)}. High-value transaction alert.", "warning")
             }
+        }
+    }
+
+    private suspend fun checkSuspiciousClusters() {
+        val results = memgraph.query(Queries.findSuspiciousClusters())
+        results.forEach { row ->
+            val cpId = row["counterpartyId"] as? String ?: return@forEach
+            val name = row["name"] as? String ?: "Unknown"
+            val count = (row["connectedAccounts"] as? Number)?.toLong() ?: 0L
+            val volume = (row["totalVolume"] as? Number)?.toDouble() ?: 0.0
+            
+            triggerAlert(cpId, "Suspicious Cluster Detected", "Counterparty '$name' ($cpId) is being used by $count accounts with a total volume of ${"%.2f".format(volume)}. Potential Sybil attack or fraud ring hub.", "critical")
         }
     }
 

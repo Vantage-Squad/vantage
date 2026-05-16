@@ -109,8 +109,15 @@ object Queries {
            OR a.bvn = ${"$"}search
         WITH a
         LIMIT ${"$"}limit
-        MATCH (a)-[t:TRANSACTED_WITH]-(n)
+        OPTIONAL MATCH (a)-[t:TRANSACTED_WITH]-(n)
         RETURN a, t, n
+    """.trimIndent()
+
+    fun findSuspiciousClusters() = """
+        MATCH (a:Account)-[t:TRANSACTED_WITH]->(c:Counterparty)
+        WITH c, count(DISTINCT a) as connectedAccounts, sum(t.amount) as totalVolume
+        WHERE connectedAccounts > 5 AND totalVolume > 500000
+        RETURN c.id as counterpartyId, c.name as name, connectedAccounts, totalVolume
     """.trimIndent()
     fun globalRecentTransactions() = """
         MATCH (a:Account)-[t:TRANSACTED_WITH]->(c:Counterparty)
