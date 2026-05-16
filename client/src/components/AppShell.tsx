@@ -1,4 +1,7 @@
-import { useAppSelector } from "../store/hooks";
+import { useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "../store/hooks";
+import { incomingTransaction, incomingAlert } from "../store/dashboardSlice";
+import { sseService } from "../lib/sseService";
 import VerdictModal from "./VerdictModal";
 import type { ReactNode } from "react";
 import { NavLink } from "react-router";
@@ -22,7 +25,16 @@ function getDisplayName(user: AuthUser | null): string {
 }
 
 const AppShell = ({ children }: AppShellProps) => {
+    const dispatch = useAppDispatch();
     const user = useAppSelector((state) => state.auth?.user ?? null);
+
+    useEffect(() => {
+        sseService.start(
+            (t) => dispatch(incomingTransaction(t)),
+            (a) => dispatch(incomingAlert(a))
+        );
+        return () => sseService.stop();
+    }, [dispatch]);
 
     return (
         <div className="flex h-screen w-full bg-bg-canvas text-text-primary font-sans">
