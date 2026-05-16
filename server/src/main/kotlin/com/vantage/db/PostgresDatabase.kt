@@ -41,7 +41,8 @@ object PostgresDatabase {
                 }
             }
 
-            jdbcUrl = if (rawUrl.contains("?")) "$rawUrl&ssl=true&sslmode=require" else "$rawUrl?ssl=true&sslmode=require"
+            val sslParams = "ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory"
+            jdbcUrl = if (rawUrl.contains("?")) "$rawUrl&$sslParams" else "$rawUrl?$sslParams"
             username = finalUser
             password = finalPass
             driverClassName = "org.postgresql.Driver"
