@@ -333,7 +333,7 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
     <div className="relative w-full h-full overflow-hidden" style={{ background: 'var(--color-bg-canvas)' }}>
       <div ref={containerRef} className="absolute inset-0" />
 
-      {/* CSS-animated pulse rings for flagged/critical nodes only */}
+      {/* CSS-animated solid pulse dots for flagged/critical nodes only */}
       {pulsingNodes.map(pos => (
         <div
           key={pos.id}
@@ -344,8 +344,8 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
             left: pos.x,
             top: pos.y,
             transform: 'translate(-50%, -50%)',
-            border: '2px solid #EF4444',
-            animation: 'criticalPulse 1.4s ease-out infinite',
+            background: '#EF4444',
+            animation: 'criticalPulse 1.6s ease-out infinite',
           }}
         />
       ))}
@@ -372,9 +372,8 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
 
       <style>{`
         @keyframes criticalPulse {
-          0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.9; }
-          60%  { transform: translate(-50%, -50%) scale(1.8); opacity: 0.3; }
-          100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+          0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.8; }
+          100% { transform: translate(-50%, -50%) scale(2.6); opacity: 0;   }
         }
       `}</style>
     </div>
