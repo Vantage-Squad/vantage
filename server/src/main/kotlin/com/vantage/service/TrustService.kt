@@ -17,8 +17,12 @@ class TrustService {
         val cpr = computePageRank(accountId)
         val vvel = computeVelocity(accountId)
         val pdist = computeProximity(accountId)
-        val ts = config.trustScoreAlpha * cpr + config.trustScoreBeta * vvel - config.trustScoreGamma * pdist
+
+        // Base trust of 0.5 for new accounts so they don't start at CRITICAL
+        val baseTrust = if (cpr == 0.0) 0.5 else 0.0
+        val ts = (config.trustScoreAlpha * cpr) + (config.trustScoreBeta * vvel) - (config.trustScoreGamma * pdist) + (baseTrust * 0.5)
         val clamped = ts.coerceIn(0.0, 1.0)
+        
         val tier = when {
             clamped > config.trustScoreSafeThreshold -> Tier.SAFE
             clamped >= config.trustScoreHighRiskThreshold -> Tier.HIGH_RISK

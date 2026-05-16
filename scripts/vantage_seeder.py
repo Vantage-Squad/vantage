@@ -4,12 +4,15 @@ import random
 import uuid
 from datetime import datetime
 import os
+import hmac
+import hashlib
+import json
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv(os.path.join(os.path.dirname(__file__), '../server/.env'))
 
-BASE_URL = os.getenv("API_URL", "http://localhost:8081")
+BASE_URL = os.getenv("API_URL", "https://vantage-v68w.onrender.com")
 SQUAD_SECRET = os.getenv("SQUAD_SECRET_KEY", "sandbox_sk_65e81c174e805616f637b682350faa79f5839e161")
 
 # Personas to simulate different risk patterns
@@ -19,21 +22,24 @@ PERSONAS = [
         "email": "sarah.m@example.com",
         "bvn": "22233344455",
         "risk_profile": "low",
-        "ips": ["192.168.1.50", "102.89.34.12"]
+        "ips": ["192.168.1.50", "102.89.34.12"],
+        "avg_amount": 5000
     },
     {
         "name": "Ibrahim Yusuf",
-        "email": "ibrahim.y@vantage.io",
+        "email": "ibrahim.y@gmail.com",
         "bvn": "55566677788",
         "risk_profile": "moderate",
-        "ips": ["197.210.64.5", "41.203.112.9"]
+        "ips": ["197.210.64.5", "41.203.112.9"],
+        "avg_amount": 3000
     },
     {
         "name": "Shadow Node 09",
         "email": "shadow.node@darknet.com",
         "bvn": "99900011122",
         "risk_profile": "high",
-        "ips": ["185.220.101.44", "45.14.71.22"] # Known VPN/Tor exits
+        "ips": ["185.220.101.44", "45.14.71.22"],
+        "avg_amount": 150000
     }
 ]
 
@@ -65,8 +71,16 @@ def send_transaction(persona):
         "timestamp": datetime.now().isoformat()
     }
     
+    # Calculate real HMAC signature using the Squad Secret Key
+    payload_json = json.dumps(payload, separators=(',', ':'))
+    signature = hmac.new(
+        SQUAD_SECRET.encode('utf-8'),
+        payload_json.encode('utf-8'),
+        hashlib.sha512
+    ).hexdigest()
+    
     headers = {
-        "X-Squad-Encrypted-Body": "vantage-internal-test-sig", # Mock signature for demo
+        "X-Squad-Encrypted-Body": signature,
         "Content-Type": "application/json"
     }
     
@@ -74,7 +88,11 @@ def send_transaction(persona):
         print(f"[{datetime.now().strftime('%H:%M:%S')}] Sending tx {tx_ref} for {persona['name']}...")
         print(f"    Amount: {amount} | Destination: {cp['name']}")
         
-        response = requests.post(f"{BASE_URL}/squad/webhook", json=payload, headers=headers)
+        response = requests.post(
+            f"{BASE_URL}/squad/webhook",
+            data=payload_json,
+            headers=headers
+        )
         
         if response.status_code == 200:
             res_data = response.json()
