@@ -84,6 +84,13 @@ fun Application.configureRouting() {
             // 2. Compute Trust Score
             val ts = trustService.compute(accountId)
             
+            // 3. Persist Trust Score back to Graph
+            memgraph.execute(Queries.updateAccountTrust(), mapOf(
+                "id" to accountId,
+                "trustScore" to ts.ts,
+                "tier" to ts.tier.name
+            ))
+            
             // 3. Emit Enriched SSE Event
             val eventData = buildJsonObject {
                 put("transactionRef", transactionRef)

@@ -105,8 +105,7 @@ export default function Graph() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactions]);
 
-  const hasFlaggedOrWatch = graphData.nodes.some(n => n.status === 'flagged' || n.status === 'watch');
-  const showEmptyState = !hasFlaggedOrWatch && !isRefreshing && !fetchError;
+  const showEmptyState = graphData.nodes.length === 0 && !isRefreshing && !fetchError;
 
   // Node click → select + fetch verdict → VerdictModal opens (via selectedNodeId in Redux)
   const handleNodeClick = (nodeId: string) => {

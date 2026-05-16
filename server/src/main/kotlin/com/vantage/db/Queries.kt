@@ -57,6 +57,12 @@ object Queries {
         }]->(c)
     """.trimIndent()
 
+    fun updateAccountTrust() = """
+        MATCH (a:Account {id: ${"$"}id})
+        SET a.trustScore = ${"$"}trustScore,
+            a.tier = ${"$"}tier
+    """.trimIndent()
+
     fun recentTransactions() = """
         MATCH (a:Account {id: ${"$"}id})-[t:TRANSACTED_WITH]->()
         RETURN t ORDER BY t.timestamp DESC LIMIT 20
