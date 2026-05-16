@@ -68,13 +68,9 @@ const AppShell = ({ children }: AppShellProps) => {
             {/* Main Content */}
             <div className="flex-1 flex flex-col h-full overflow-hidden">
                 {/* Topbar */}
-                <header className="h-(--height-topbar) shrink-0 bg-bg-surface border-b border-border-subtle flex items-center justify-between px-6">
-                    <span className="text-(length:--font-size-subheading) font-medium">Sentinel</span>
+                <header className="h-(--height-topbar) shrink-0 bg-bg-surface border-b border-border-subtle flex items-center justify-end px-6">
                     <div className="flex items-center gap-2">
                         <StatusDot status={streamStatus} />
-                        <span className="text-(length:--font-size-caption) text-text-muted uppercase tracking-wider">
-                            System Status
-                        </span>
                     </div>
                 </header>
 
