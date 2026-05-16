@@ -11,6 +11,7 @@ import com.vantage.service.SseService
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.testing.*
 import io.mockk.*
 import kotlin.test.BeforeTest
@@ -25,6 +26,8 @@ class RoutesIntegrationTest {
     @BeforeTest
     fun setup() {
         mockkObject(AppContext)
+        val app = mockk<Application>(relaxed = true)
+        every { AppContext.application } returns app
         every { AppContext.memgraph } returns memgraph
         every { AppContext.config } returns config
         every { AppContext.sseService } returns SseService()

@@ -14,6 +14,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.assertFalse
+import kotlinx.coroutines.runBlocking
 
 class AuthTest {
 
@@ -37,7 +38,7 @@ class AuthTest {
     fun `test jwt creation and verification`() {
         val secret = "test-secret"
         val now = Instant.now().epochSecond
-        val payload = JwtPayload(sub = "user1", email = "test@vantage.com", iat = now, exp = now + 100)
+        val payload = JwtPayload(sub = "user1", email = "test@vantage.com", role = "ADMIN", iat = now, exp = now + 100)
         
         val token = createJwt(payload, secret)
         assertNotNull(token)
@@ -53,7 +54,7 @@ class AuthTest {
     fun `test expired jwt verification`() {
         val secret = "test-secret"
         val now = Instant.now().epochSecond
-        val payload = JwtPayload(sub = "user1", email = "test@vantage.com", iat = now - 200, exp = now - 100)
+        val payload = JwtPayload(sub = "user1", email = "test@vantage.com", role = "ADMIN", iat = now - 200, exp = now - 100)
         
         val token = createJwt(payload, secret)
         val verified = verifyJwt(token, secret)
@@ -68,7 +69,9 @@ class AuthTest {
         every { call.request } returns request
         every { request.header(HttpHeaders.Authorization) } returns "Bearer valid-api-key"
 
-        assertTrue(suspend { authenticateRequest(call) }.let { run { it } }())
+        runBlocking {
+            assertTrue(authenticateRequest(call))
+        }
     }
 
     @Test

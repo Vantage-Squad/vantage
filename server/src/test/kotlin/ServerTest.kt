@@ -19,6 +19,7 @@ class ServerTest {
             AppContext.config = AppConfig(environment.config)
             AppContext.memgraph = MemgraphClient("bolt://localhost:7687")
             AppContext.sseService = SseService()
+            AppContext.application = this
             configureRouting()
         }
         val response = client.get("/health")

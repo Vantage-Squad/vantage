@@ -15,7 +15,7 @@ import kotlin.test.assertNotNull
 class AiServiceTest {
 
     private val application = mockk<Application>(relaxed = true)
-    private val agent = mockk<AIAgent>(relaxed = true)
+    private val agent = mockk<AIAgent<String, String>>(relaxed = true)
 
     @BeforeTest
     fun setup() {
@@ -26,8 +26,11 @@ class AiServiceTest {
         every { application.plugin(Koog) } returns koog
         
         mockkStatic(AIAgent::class)
-        val mBuilder = mockk<AIAgent.Builder>(relaxed = true)
+        val mBuilder = mockk<ai.koog.agents.core.agent.AIAgentBuilder>(relaxed = true)
         every { AIAgent.builder() } returns mBuilder
+        every { mBuilder.promptExecutor(any()) } returns mBuilder
+        every { mBuilder.llmModel(any()) } returns mBuilder
+        every { mBuilder.systemPrompt(any()) } returns mBuilder
         every { mBuilder.build() } returns agent
     }
 
