@@ -120,6 +120,25 @@ export const sseService: SSEService = {
                     }
                 });
 
+                eventSource.addEventListener("flag_update", async (e) => {
+                    try {
+                        const data = JSON.parse(e.data);
+                        const { addFlaggedAccount, removeFlaggedAccount } = await import("../store/flaggedSlice");
+                        if (data.isBlacklisted) {
+                            store.dispatch(addFlaggedAccount({
+                                id: data.accountId,
+                                isBlacklisted: true,
+                                trustScore: data.trustScore || 0.1,
+                                isFrozen: false,
+                            }));
+                        } else {
+                            store.dispatch(removeFlaggedAccount(data.accountId));
+                        }
+                    } catch (err) {
+                        console.error("Failed to parse flag_update event", err);
+                    }
+                });
+
                 eventSource.onerror = () => {
                     eventSource?.close();
                     eventSource = null;

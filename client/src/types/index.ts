@@ -80,3 +80,12 @@ export interface VerdictPageState {
   status: VerdictStatus;
 }
 
+export interface FlaggedAccount {
+  id: string;
+  email?: string;
+  isBlacklisted: boolean;
+  trustScore: number;
+  lastSeen?: string;
+  isFrozen: boolean;
+  latestRecommendation?: string;
+}
