@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { selectNode, updateGraphData } from '../store/graphSlice';
 
@@ -20,11 +20,13 @@ export default function Graph() {
   const transactions = useAppSelector(state => state.dashboard.transactions);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatuses, setFilterStatuses] = useState<NodeStatus[]>(['flagged', 'watch', 'clean']);
+  const [filterStatuses, setFilterStatuses] = useState<NodeStatus[]>(['flagged', 'watch']);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   const graphCanvasRef = useRef<GraphCanvasHandle>(null);
+
+  const flaggedAccounts = useAppSelector(state => state.flagged.accounts);
 
   // ── Fetch real graph data ─────────────────────────────────────────────────
   const loadGraphData = useCallback(async () => {
@@ -45,7 +47,7 @@ export default function Graph() {
     loadGraphData();
   }, [loadGraphData]);
 
-  // ── Live feed → graph status sync & dynamic injection ───────────────────
+  // ── Live feed & Flagged Accounts → graph status sync & dynamic injection ──
   useEffect(() => {
     if (!transactions || transactions.length === 0) return;
     const latest = transactions[0];
@@ -53,6 +55,10 @@ export default function Graph() {
     let newStatus: NodeStatus = 'clean';
     if (latest.status === 'CRITICAL') newStatus = 'flagged';
     else if (latest.status === 'HIGH_RISK') newStatus = 'watch';
+
+    // Override with flagged accounts list if present
+    const isExplicitlyFlagged = flaggedAccounts.some(a => a.id === latest.accountId && (a.isBlacklisted || a.trustScore < 40));
+    if (isExplicitlyFlagged) newStatus = 'flagged';
 
     const nodes = [...graphData.nodes];
     const edges = [...graphData.edges];
@@ -69,7 +75,8 @@ export default function Graph() {
         trustScore: latest.trustScore ? Math.round(latest.trustScore * 100) : undefined
       });
       changed = true;
-    } else if (nodes[accNodeIdx].status !== newStatus) {
+    } else if (nodes[accNodeIdx].status !== newStatus && (newStatus === 'flagged' || nodes[accNodeIdx].status !== 'flagged')) {
+      // Only upgrade risk, don't downgrade automatically to clean if it was flagged before
       nodes[accNodeIdx] = { ...nodes[accNodeIdx], status: newStatus };
       changed = true;
     }
@@ -77,11 +84,12 @@ export default function Graph() {
     // 2. Upsert Counterparty Node
     const cpNodeIdx = nodes.findIndex(n => n.id === latest.counterpartyId);
     if (cpNodeIdx === -1) {
+      const cpIsFlagged = flaggedAccounts.some(a => a.id === latest.counterpartyId && (a.isBlacklisted || a.trustScore < 40));
       nodes.push({
         id: latest.counterpartyId,
         label: latest.counterpartyName || latest.counterpartyId,
-        type: 'account', // or individual/merchant if we had more types
-        status: 'clean'
+        type: 'account',
+        status: cpIsFlagged ? 'flagged' : 'clean'
       });
       changed = true;
     }
@@ -103,9 +111,20 @@ export default function Graph() {
       dispatch(updateGraphData({ nodes, edges }));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactions]);
+  }, [transactions, flaggedAccounts]);
 
-  const showEmptyState = graphData.nodes.length === 0 && !isRefreshing && !fetchError;
+  // FILTER: Only show risky nodes (flagged or watch) that are also active in filterStatuses
+  const riskyGraphData = useMemo(() => {
+    const nodes = graphData.nodes.filter(n => 
+      (n.status === 'flagged' || n.status === 'watch') && 
+      filterStatuses.includes(n.status)
+    );
+    const nodeIds = new Set(nodes.map(n => n.id));
+    const edges = graphData.edges.filter(e => nodeIds.has(e.source) && nodeIds.has(e.target));
+    return { nodes, edges };
+  }, [graphData, filterStatuses]);
+
+  const showEmptyState = riskyGraphData.nodes.length === 0 && !isRefreshing && !fetchError;
 
   // Node click → select + fetch verdict → VerdictModal opens (via selectedNodeId in Redux)
   const handleNodeClick = (nodeId: string) => {
@@ -127,14 +146,14 @@ export default function Graph() {
       <div className="flex-1 relative overflow-hidden">
         <GraphCanvas
           ref={graphCanvasRef}
-          graphData={graphData}
+          graphData={riskyGraphData}
           selectedNodeId={selectedNodeId}
           onNodeClick={handleNodeClick}
           filterStatuses={filterStatuses}
           searchQuery={searchQuery}
         />
 
-        <NodeLegend nodes={graphData.nodes} />
+        <NodeLegend nodes={riskyGraphData.nodes} />
 
         <ZoomControls
           onZoomIn={() => graphCanvasRef.current?.zoomIn()}

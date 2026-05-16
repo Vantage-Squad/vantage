@@ -148,6 +148,17 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
             'opacity': 0.6,
           },
         },
+        // ── Edges: critical-path (pulsing) ──
+        {
+          selector: 'edge.critical-path',
+          style: {
+            'line-color': '#EF4444',
+            'width': 3,
+            'line-style': 'dashed',
+            'line-dash-pattern': [6, 4],
+            'opacity': 1,
+          },
+        },
         // ── Filtered out (hidden by status filter toggles) ──
         {
           selector: '.filtered-out',
@@ -215,10 +226,19 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
       // Upsert edges
       graphData.edges.forEach(edge => {
         const existing = cy.getElementById(edge.id);
+        const sourceNode = cy.getElementById(edge.source);
+        const targetNode = cy.getElementById(edge.target);
+        
+        // Mark as critical path if either end is flagged
+        const isCritical = sourceNode.data('status') === 'flagged' || targetNode.data('status') === 'flagged';
+
         if (existing.length > 0) {
           existing.data({ ...edge });
+          if (isCritical) existing.addClass('critical-path');
+          else existing.removeClass('critical-path');
         } else {
-          cy.add({ group: 'edges', data: { ...edge } });
+          const newEdge = cy.add({ group: 'edges', data: { ...edge } });
+          if (isCritical) newEdge.addClass('critical-path');
         }
       });
     });
@@ -259,6 +279,24 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
       });
     });
   }, [filterStatuses]);
+
+  // Animation loop for pulsing critical edges (marching ants effect)
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (!cy) return;
+
+    let offset = 0;
+    let reqId: number;
+
+    const animate = () => {
+      offset = (offset + 0.5) % 10;
+      cy.edges('.critical-path').style('line-dash-offset', -offset);
+      reqId = requestAnimationFrame(animate);
+    };
+
+    reqId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(reqId);
+  }, [graphData]);
 
 
 
