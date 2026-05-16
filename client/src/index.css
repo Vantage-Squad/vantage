@@ -207,9 +207,43 @@
     font-variation-settings: "opsz" 32;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    color-scheme: dark;
   }
 }
 
 body {
   background-color: var(--color-bg-canvas);
+}
+
+/* ============================================================
+   CUSTOM SCROLLBARS — narrow, dark-themed
+   Webkit (Chrome, Edge, Safari) + Firefox
+   ============================================================ */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-subtle) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-subtle);
+  border-radius: 9999px;
+  transition: background 200ms ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-emphasis);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
