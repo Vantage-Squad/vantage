@@ -18,7 +18,11 @@ fun Application.configureHttp() {
         allowHeader(HttpHeaders.ContentType)
         allowHeader("X-Squad-Encrypted-Body")
         allowNonSimpleContentTypes = true
-        allowHost("localhost:5173")
+        anyHost() // Relaxed for dev, should be restricted in prod
+        allowHost("localhost:3000")
+        allowHost("127.0.0.1:5173")
+        allowHost("127.0.0.1:3000")
+        anyHost()
     }
     routing {
         openAPI(path = "openapi") {}

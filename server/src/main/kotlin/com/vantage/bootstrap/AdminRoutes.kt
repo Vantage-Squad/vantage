@@ -17,6 +17,12 @@ fun Route.configureAdminRoutes() {
     route("/admin") {
         // Middleware to verify ADMIN role
         intercept(ApplicationCallPipeline.Call) {
+            val path = call.request.uri.substringBefore('?')
+            if (path.endsWith("/login")) {
+                proceed()
+                return@intercept
+            }
+
             val config = AppContext.config
             val authHeader = call.request.header(HttpHeaders.Authorization) ?: ""
             val token = authHeader.removePrefix("Bearer ").trim()
@@ -25,7 +31,9 @@ fun Route.configureAdminRoutes() {
             if (payload == null || payload.role != "ADMIN") {
                 call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Admin privileges required"))
                 finish()
+                return@intercept
             }
+            proceed()
         }
 
         post("/freeze/{accountId}") {

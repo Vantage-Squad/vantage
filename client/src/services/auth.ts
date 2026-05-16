@@ -90,7 +90,7 @@ export async function login(email: string, password: string): Promise<void> {
 
     try {
         const { data } = await axiosInstance.post<{ token: string; expiresIn: number }>(
-            "/api/v1/admin/login",
+            "/api/v1/auth/login",
             { email, password }
         );
 

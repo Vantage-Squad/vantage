@@ -21,7 +21,7 @@ fun Application.configureRouting() {
     install(SSE)
     routing {
         route("/api/v1") {
-            post("/admin/login") {
+            post("/auth/login") {
                 handleLogin(call)
             }
             configureAdminRoutes()
