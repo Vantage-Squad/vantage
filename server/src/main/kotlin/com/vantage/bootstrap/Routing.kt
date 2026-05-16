@@ -57,6 +57,8 @@ fun Application.configureRouting() {
                 "id" to accountId,
                 "email" to accountId,
                 "bvn" to body["bvn"],
+                "nin" to null,
+                "deviceFingerprint" to null,
                 "ipAddress" to body["ipAddress"],
                 "geoCity" to null,
                 "geoCountry" to null

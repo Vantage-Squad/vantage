@@ -16,12 +16,10 @@ fun Application.configureHttp() {
         allowMethod(HttpMethod.Patch)
         allowHeader(HttpHeaders.Authorization)
         allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.Accept)
+        allowHeader(HttpHeaders.CacheControl)
         allowHeader("X-Squad-Encrypted-Body")
         allowNonSimpleContentTypes = true
-        anyHost() // Relaxed for dev, should be restricted in prod
-        allowHost("localhost:3000")
-        allowHost("127.0.0.1:5173")
-        allowHost("127.0.0.1:3000")
         anyHost()
     }
     routing {
