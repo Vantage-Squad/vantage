@@ -206,9 +206,9 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
       graphData.nodes.forEach(node => {
         const existing = cy.getElementById(node.id);
         if (existing.length > 0) {
-          existing.data(node);
+          existing.data({ ...node });
         } else {
-          cy.add({ group: 'nodes', data: node });
+          cy.add({ group: 'nodes', data: { ...node } });
         }
       });
 
@@ -216,9 +216,9 @@ const GraphCanvas = forwardRef<GraphCanvasHandle, GraphCanvasProps>(({
       graphData.edges.forEach(edge => {
         const existing = cy.getElementById(edge.id);
         if (existing.length > 0) {
-          existing.data(edge);
+          existing.data({ ...edge });
         } else {
-          cy.add({ group: 'edges', data: edge });
+          cy.add({ group: 'edges', data: { ...edge } });
         }
       });
     });
